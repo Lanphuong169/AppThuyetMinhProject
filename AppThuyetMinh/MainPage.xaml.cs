@@ -1,24 +1,51 @@
-﻿namespace AppThuyetMinh
+﻿using Microsoft.Maui.Devices.Sensors;
+using Microsoft.Maui.Controls.Maps;
+using Microsoft.Maui.Controls.Maps;
+using Microsoft.Maui.Maps;
+using Microsoft.Maui.Devices.Sensors;
+
+namespace AppThuyetMinh;
+
+public partial class MainPage : ContentPage
 {
-    public partial class MainPage : ContentPage
+    bool running = true;
+
+    public MainPage()
     {
-        int count = 0;
+        InitializeComponent();
 
-        public MainPage()
+        StartGPS();
+    }
+
+    async void StartGPS()
+    {
+        while (running)
         {
-            InitializeComponent();
-        }
+            try
+            {
+                var location =
+                    await Geolocation.GetLocationAsync(
+                        new GeolocationRequest(
+                            GeolocationAccuracy.Medium));
 
-        private void OnCounterClicked(object? sender, EventArgs e)
-        {
-            count++;
+                if (location != null)
+                {
+                    var pos = new Location(
+                        location.Latitude,
+                        location.Longitude);
 
-            if (count == 1)
-                CounterBtn.Text = $"Clicked {count} time";
-            else
-                CounterBtn.Text = $"Clicked {count} times";
+                    map.MoveToRegion(
+                        MapSpan.FromCenterAndRadius(
+                            pos,
+                            Distance.FromMeters(200)));
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
 
-            SemanticScreenReader.Announce(CounterBtn.Text);
+            await Task.Delay(5000);
         }
     }
 }
