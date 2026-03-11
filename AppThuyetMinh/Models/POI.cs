@@ -1,18 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace AppThuyetMinh.Models;
 
-namespace AutoNarrationApp.Models;
-
-public class POI
+public class Poi
 {
     public string Name { get; set; }
 
-    public double Lat { get; set; }
+    public double Latitude { get; set; }
 
-    public double Lng { get; set; }
+    public double Longitude { get; set; }
 
-    public string Audio { get; set; }
+    public string Script { get; set; }
 }

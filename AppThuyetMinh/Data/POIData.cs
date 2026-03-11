@@ -1,31 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using AppThuyetMinh.Models;
 
-using AutoNarrationApp.Models;
+namespace AppThuyetMinh.Data;
 
-namespace AutoNarrationApp.Data;
-
-public static class POIData
+public static class PoiData
 {
-    public static List<POI> List = new List<POI>()
+    public static List<Poi> GetPois()
     {
-        new POI
+        return new List<Poi>
         {
-            Name = "Quan Bun Bo",
-            Lat = 10.7765,
-            Lng = 106.7009,
-            Audio = "bunbo.mp3"
-        },
+            new Poi
+            {
+                Name = "Oc Oanh",
+                Latitude = 10.759617,
+                Longitude = 106.707120,
+                Script = "Day la quan oc Oanh noi tieng o duong Vinh Khanh quan 4"
+            },
 
-        new POI
-        {
-            Name = "Quan Com Tam",
-            Lat = 10.7767,
-            Lng = 106.7012,
-            Audio = "comtam.mp3"
-        }
-    };
+            new Poi
+            {
+                Name = "Oc Thao",
+                Latitude = 10.759300,
+                Longitude = 106.706900,
+                Script = "Quan oc Thao chuyen hai san tuoi song"
+            }
+        };
+    }
 }

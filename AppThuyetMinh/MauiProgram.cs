@@ -1,9 +1,4 @@
-﻿using Microsoft.Maui;
-using Microsoft.Maui.Controls.Hosting;
-using Microsoft.Maui.Hosting;
-
-using Microsoft.Maui.Controls.Maps;
-using Microsoft.Maui.Maps;
+﻿using Microsoft.Maui.Controls.Maps;
 
 namespace AppThuyetMinh;
 
@@ -15,11 +10,7 @@ public static class MauiProgram
 
         builder
             .UseMauiApp<App>()
-            .UseMauiMaps()   // BẮT BUỘC PHẢI CÓ
-            .ConfigureFonts(fonts =>
-            {
-                fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-            });
+            .UseMauiMaps();
 
         return builder.Build();
     }

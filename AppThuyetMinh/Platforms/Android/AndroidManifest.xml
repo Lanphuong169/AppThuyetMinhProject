@@ -1,11 +1,20 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-	<application android:allowBackup="true" android:icon="@mipmap/appicon" android:roundIcon="@mipmap/appicon_round" android:supportsRtl="true"></application>
-	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+﻿<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.appthuyetminh">
+
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-	<uses-permission android:name="android.permission.INTERNET" />
-	<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+
+	<application
+        android:allowBackup="true"
+        android:supportsRtl="true">
+
+
+		<meta-data
+    android:name="com.google.android.geo.API_KEY"
+    android:value="AIzaSyAAXgMo6z2l6G--_yB2RFxwBw5-zaBfzDk"/>
+
+
+	</application>
 
 </manifest>
