@@ -8,8 +8,13 @@
     <Grid>
 
         <maps:Map
-            x:Name="MyMap"
+            x:Name="map"
             IsShowingUser="True" />
+
+        <Button
+            Text="Di chuyển"
+            VerticalOptions="End"
+            Clicked="OnMoveClicked"/>
 
     </Grid>
 
