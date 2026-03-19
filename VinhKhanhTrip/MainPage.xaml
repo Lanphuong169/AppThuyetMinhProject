@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:maps="clr-namespace:Microsoft.Maui.Controls.Maps;assembly=Microsoft.Maui.Controls.Maps"
+             x:Class="VinhKhanhTrip.MainPage"
+             Shell.NavBarIsVisible="False">
+    <Grid>
+        <maps:Map x:Name="map" />
+        <VerticalStackLayout Margin="15,40,15,0" VerticalOptions="Start" Spacing="0">
+            <Border BackgroundColor="White" StrokeShape="RoundRectangle 25" StrokeThickness="0">
+                <SearchBar x:Name="searchBar" TextChanged="OnSearchTextChanged" SearchButtonPressed="OnSearchButtonPressed"/>
+            </Border>
+            <Border x:Name="SuggestionBox" IsVisible="False" BackgroundColor="White" Margin="10,2,10,0" StrokeShape="RoundRectangle 10" MaximumHeightRequest="200" ZIndex="100">
+                <CollectionView x:Name="SuggestionList" SelectionMode="Single" SelectionChanged="OnSuggestionSelected">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Label Text="{Binding Ten}" Padding="15,10" FontAttributes="Bold" TextColor="Black" />
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Border>
+        </VerticalStackLayout>
+
+        <Border x:Name="DistIndicator" HorizontalOptions="Center" VerticalOptions="Start" Margin="0,110,0,0" BackgroundColor="#DD000000" Padding="15,8" StrokeShape="RoundRectangle 20" IsVisible="False">
+            <VerticalStackLayout HorizontalOptions="Center">
+                <Label x:Name="lblTargetName" TextColor="Yellow" FontSize="12" HorizontalOptions="Center"/>
+                <Label x:Name="lblDistance" TextColor="White" FontSize="18" FontAttributes="Bold" HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+        </Border>
+
+        <Border HorizontalOptions="End" VerticalOptions="End" Margin="15" BackgroundColor="#CCFFFFFF" StrokeShape="RoundRectangle 25" Padding="10">
+            <VerticalStackLayout Spacing="5">
+                <Switch x:Name="FakeModeSwitch" IsToggled="True" Toggled="OnFakeModeToggled" HorizontalOptions="Center"/>
+                <Grid RowDefinitions="45,45,45" ColumnDefinitions="45,45,45" IsVisible="{Binding IsToggled, Source={x:Reference FakeModeSwitch}}">
+                    <Button Grid.Row="0" Grid.Column="1" Text="▲" Clicked="UpClicked" CornerRadius="22" BackgroundColor="#4285F4"/>
+                    <Button Grid.Row="1" Grid.Column="0" Text="◀" Clicked="LeftClicked" CornerRadius="22" BackgroundColor="#4285F4"/>
+                    <Button Grid.Row="1" Grid.Column="2" Text="▶" Clicked="RightClicked" CornerRadius="22" BackgroundColor="#4285F4"/>
+                    <Button Grid.Row="2" Grid.Column="1" Text="▼" Clicked="DownClicked" CornerRadius="22" BackgroundColor="#4285F4"/>
+                </Grid>
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+</ContentPage>
