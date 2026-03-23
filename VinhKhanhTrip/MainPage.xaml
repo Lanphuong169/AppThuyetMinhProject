@@ -3,35 +3,44 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:maps="clr-namespace:Microsoft.Maui.Controls.Maps;assembly=Microsoft.Maui.Controls.Maps"
              x:Class="VinhKhanhTrip.MainPage"
-             Shell.NavBarIsVisible="False">
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#0D0D11">
+
     <Grid>
         <maps:Map x:Name="map" />
-        <VerticalStackLayout Margin="15,40,15,0" VerticalOptions="Start" Spacing="0">
-            <Border BackgroundColor="White" StrokeShape="RoundRectangle 25" StrokeThickness="0">
-                <SearchBar x:Name="searchBar" TextChanged="OnSearchTextChanged" SearchButtonPressed="OnSearchButtonPressed"/>
+
+        <VerticalStackLayout Margin="15,45,15,0" VerticalOptions="Start" Spacing="0">
+            <Border BackgroundColor="#CC1A1A22" Stroke="#D4AF37" StrokeThickness="1" StrokeShape="RoundRectangle 25">
+                <SearchBar x:Name="searchBar" PlaceholderColor="#888899" TextColor="White" CancelButtonColor="#D4AF37"
+                           TextChanged="OnSearchTextChanged" SearchButtonPressed="OnSearchButtonPressed"/>
             </Border>
-            <Border x:Name="SuggestionBox" IsVisible="False" BackgroundColor="White" Margin="10,2,10,0" StrokeShape="RoundRectangle 10" MaximumHeightRequest="200" ZIndex="100">
+
+            <Border x:Name="SuggestionBox" IsVisible="False" BackgroundColor="#F01A1A22" Margin="10,2,10,0" 
+                    StrokeShape="RoundRectangle 10" MaximumHeightRequest="200" ZIndex="100">
                 <CollectionView x:Name="SuggestionList" SelectionMode="Single" SelectionChanged="OnSuggestionSelected">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <Label Text="{Binding Ten}" Padding="15,10" FontAttributes="Bold" TextColor="Black" />
+                            <Label Text="{Binding Ten}" Padding="15,10" FontAttributes="Bold" TextColor="#D4AF37" />
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
             </Border>
         </VerticalStackLayout>
 
-        <Border x:Name="DistIndicator" HorizontalOptions="Center" VerticalOptions="Start" Margin="0,110,0,0" BackgroundColor="#DD000000" Padding="15,8" StrokeShape="RoundRectangle 20" IsVisible="False">
+        <Border x:Name="DistIndicator" HorizontalOptions="Center" VerticalOptions="Start" Margin="0,115,0,0" 
+                BackgroundColor="#EE0D0D11" Padding="20,10" Stroke="#D4AF37" StrokeThickness="1" StrokeShape="RoundRectangle 20" IsVisible="False">
             <VerticalStackLayout HorizontalOptions="Center">
-                <Label x:Name="lblTargetName" TextColor="Yellow" FontSize="12" HorizontalOptions="Center"/>
-                <Label x:Name="lblDistance" TextColor="White" FontSize="18" FontAttributes="Bold" HorizontalOptions="Center"/>
+                <Label x:Name="lblTargetName" TextColor="#D4AF37" FontSize="12" FontAttributes="Bold" HorizontalOptions="Center"/>
+                <Label x:Name="lblDistance" TextColor="White" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center"/>
             </VerticalStackLayout>
         </Border>
 
-        <Border HorizontalOptions="End" VerticalOptions="End" Margin="15" BackgroundColor="#CCFFFFFF" StrokeShape="RoundRectangle 25" Padding="10">
-            <VerticalStackLayout Spacing="5">
-                <Switch x:Name="FakeModeSwitch" IsToggled="True" Toggled="OnFakeModeToggled" HorizontalOptions="Center"/>
-                <Grid RowDefinitions="45,45,45" ColumnDefinitions="45,45,45" IsVisible="{Binding IsToggled, Source={x:Reference FakeModeSwitch}}">
+        <Border HorizontalOptions="End" VerticalOptions="End" Margin="15,0,15,30" BackgroundColor="#AA1A1A22" 
+                Stroke="#2A2A35" StrokeShape="RoundRectangle 25" Padding="10">
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Giả lập vị trí" TextColor="White" FontSize="10" HorizontalOptions="Center"/>
+                <Switch x:Name="FakeModeSwitch" IsToggled="True" Toggled="OnFakeModeToggled" ThumbColor="#D4AF37" OnColor="#4285F4" HorizontalOptions="Center"/>
+                <Grid RowDefinitions="45,45,45" ColumnDefinitions="45,45,45" IsVisible="{Binding IsToggled, Source={x:Reference FakeModeSwitch}}" Margin="0,5,0,0">
                     <Button Grid.Row="0" Grid.Column="1" Text="▲" Clicked="UpClicked" CornerRadius="22" BackgroundColor="#4285F4"/>
                     <Button Grid.Row="1" Grid.Column="0" Text="◀" Clicked="LeftClicked" CornerRadius="22" BackgroundColor="#4285F4"/>
                     <Button Grid.Row="1" Grid.Column="2" Text="▶" Clicked="RightClicked" CornerRadius="22" BackgroundColor="#4285F4"/>

@@ -1,60 +1,31 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-
     <TargetFrameworks>net9.0-android</TargetFrameworks>
-
     <OutputType>Exe</OutputType>
-
     <RootNamespace>VinhKhanhTrip</RootNamespace>
-
     <UseMaui>true</UseMaui>
-
     <SingleProject>true</SingleProject>
-
     <ImplicitUsings>enable</ImplicitUsings>
-
     <Nullable>enable</Nullable>
-
     <ApplicationTitle>VinhKhanhTrip</ApplicationTitle>
-
     <ApplicationId>com.companyname.vinhkhanhtrip</ApplicationId>
 
+    <SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>
+    <NoWarn>$(NoWarn);CA1416;CS8600;CS8602;CS8604;XA4211</NoWarn>
   </PropertyGroup>
 
-
   <ItemGroup>
-
     <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" />
-
     <MauiSplashScreen Include="Resources\Splash\splash.svg" />
-
     <MauiImage Include="Resources\Images\*" />
-
     <MauiFont Include="Resources\Fonts\*" />
-
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
-
   </ItemGroup>
-
 
   <ItemGroup>
-
-    <PackageReference Include="Microsoft.Maui.Controls.Maps" Version="9.0.0" />
-
+    <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Maui.Controls.Maps" Version="9.0.10" />
   </ItemGroup>
 
-
-  <ItemGroup>
-    <MauiXaml Update="CaiDatPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </MauiXaml>
-    <MauiXaml Update="DanhSachPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </MauiXaml>
-    <MauiXaml Update="QuanAnDetailPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </MauiXaml>
-  </ItemGroup>
-
-</Project>
+  </Project>

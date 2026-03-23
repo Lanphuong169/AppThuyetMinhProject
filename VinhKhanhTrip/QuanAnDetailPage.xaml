@@ -2,26 +2,88 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="VinhKhanhTrip.QuanAnDetailPage"
-             BackgroundColor="#F2F2F6">
-    <ScrollView Padding="20">
-        <VerticalStackLayout Spacing="15">
-            <Label Text="{Binding Ten}" FontSize="24" FontAttributes="Bold" TextColor="Black" HorizontalOptions="Center"/>
+             Shell.NavBarIsVisible="False"
+             NavigationPage.HasNavigationBar="False"
+             BackgroundColor="#0D0D11">
 
-            <Border BackgroundColor="White" StrokeShape="RoundRectangle 15" Padding="15">
-                <VerticalStackLayout Spacing="10">
-                    <Label x:Name="lblTitleDescription" FontAttributes="Bold" FontSize="18" TextColor="#4285F4"/>
-                    <Label x:Name="lblMoTa" Text="{Binding MoTa}" TextColor="Black" FontSize="16"/>
+    <ScrollView>
+        <Grid RowDefinitions="300, Auto" HorizontalOptions="Fill">
+            <Grid Grid.Row="0" HorizontalOptions="Fill">
+                <Image Source="{Binding ImageUrl}" Aspect="AspectFill" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                <BoxView Color="#66000000" HorizontalOptions="Fill" VerticalOptions="Fill" />
+                <Border HorizontalOptions="Start" VerticalOptions="Start" Margin="20,45,0,0" BackgroundColor="#AA000000" StrokeShape="RoundRectangle 20" WidthRequest="40" HeightRequest="40" StrokeThickness="0">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnBackButtonClicked" />
+                    </Border.GestureRecognizers>
+                    <Label Text="◀" TextColor="#D4AF37" HorizontalOptions="Center" VerticalOptions="Center" FontSize="16" />
+                </Border>
+                <Border HorizontalOptions="End" VerticalOptions="Start" Margin="20,45,0,0" BackgroundColor="#D4AF37" StrokeShape="RoundRectangle 8" Padding="10,5" StrokeThickness="0">
+                    <Label Text="RECOMMENDED" TextColor="#0D0D11" FontSize="11" FontAttributes="Bold" />
+                </Border>
+            </Grid>
+
+            <Border Grid.Row="1" BackgroundColor="#0D0D11" StrokeThickness="0" StrokeShape="RoundRectangle 30,30,0,0" Margin="0,-40,0,0" Padding="0,25,0,30">
+                <VerticalStackLayout Spacing="20" Padding="20,0,20,0">
+                    <Grid ColumnDefinitions="*, Auto" HorizontalOptions="Fill">
+                        <VerticalStackLayout Grid.Column="0" Spacing="5">
+                            <Label Text="{Binding Ten}" FontSize="26" FontAttributes="Bold" TextColor="#D4AF37" MaxLines="2" LineBreakMode="TailTruncation"/>
+                            <Label Text="{Binding PriceRange}" FontSize="14" TextColor="#888899"/>
+                        </VerticalStackLayout>
+                        <Border Grid.Column="1" BackgroundColor="#1A1A22" Stroke="#D4AF37" StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="12,8" VerticalOptions="Center">
+                            <Label Text="{Binding Rating, StringFormat='★ {0}'}" TextColor="#D4AF37" FontSize="16" FontAttributes="Bold" />
+                        </Border>
+                    </Grid>
+
+                    <Border BackgroundColor="#1A1A22" Stroke="#2A2A35" StrokeThickness="1" StrokeShape="RoundRectangle 16" Padding="15">
+                        <VerticalStackLayout Spacing="12">
+                            <Grid ColumnDefinitions="30, *" VerticalOptions="Center">
+                                <Label Grid.Column="0" Text="📍" FontSize="16" HorizontalOptions="Center"/>
+                                <Label Grid.Column="1" Text="{Binding DiaChi}" TextColor="#AAAAAA" FontSize="13" VerticalOptions="Center"/>
+                            </Grid>
+                            <BoxView HeightRequest="1" Color="#2A2A35" />
+                            <Grid ColumnDefinitions="30, *" VerticalOptions="Center">
+                                <Label Grid.Column="0" Text="⏰" FontSize="16" HorizontalOptions="Center"/>
+                                <HorizontalStackLayout Grid.Column="1" Spacing="5">
+                                    <Label Text="Mở cửa" TextColor="#4CAF50" FontSize="13" FontAttributes="Bold" VerticalOptions="Center"/>
+                                    <Label Text="•" TextColor="#666677" FontSize="13" VerticalOptions="Center"/>
+                                    <Label Text="{Binding OpeningHours}" TextColor="#AAAAAA" FontSize="13" VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                            </Grid>
+                            <BoxView HeightRequest="1" Color="#2A2A35" />
+                            <Grid ColumnDefinitions="30, *" VerticalOptions="Center">
+                                <Label Grid.Column="0" Text="📞" FontSize="16" HorizontalOptions="Center"/>
+                                <Label Grid.Column="1" Text="{Binding SoDienThoai}" TextColor="#D4AF37" FontSize="13" FontAttributes="Bold" VerticalOptions="Center"/>
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <VerticalStackLayout Spacing="10">
+                        <Label x:Name="lblTitleDescription" Text="Giới thiệu" FontAttributes="Bold" FontSize="18" TextColor="#D4AF37"/>
+                        <Label x:Name="lblMoTa" Text="{Binding MoTa}" TextColor="#AAAAAA" FontSize="14" LineHeight="1.4"/>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="10">
+                        <Label x:Name="lblTitleSpecialties" Text="Menu Đặc sản" FontAttributes="Bold" FontSize="18" TextColor="#D4AF37"/>
+                        <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                            <HorizontalStackLayout x:Name="MenuItemsLayout" Spacing="10" />
+                        </ScrollView>
+                    </VerticalStackLayout>
+
+                    <Grid ColumnDefinitions="*, *" ColumnSpacing="15" Margin="0,15,0,0">
+                        <Border Grid.Column="0" BackgroundColor="#1A1A22" Stroke="#D4AF37" StrokeThickness="1" StrokeShape="RoundRectangle 12" HeightRequest="50">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnSpeakerTapped" />
+                            </Border.GestureRecognizers>
+                            <HorizontalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
+                                <Label Text="🔊" FontSize="16" VerticalOptions="Center"/>
+                                <Label Text="Nghe" TextColor="#D4AF37" FontSize="15" FontAttributes="Bold" VerticalOptions="Center"/>
+                            </HorizontalStackLayout>
+                        </Border>
+
+                        <Button x:Name="btnViewMap" Grid.Column="1" Clicked="OnViewMapClicked" Text="XEM BẢN ĐỒ" BackgroundColor="#D4AF37" TextColor="#0D0D11" CornerRadius="12" HeightRequest="50" FontAttributes="Bold" FontSize="15"/>
+                    </Grid>
                 </VerticalStackLayout>
             </Border>
-
-            <Border BackgroundColor="White" StrokeShape="RoundRectangle 15" Padding="15">
-                <VerticalStackLayout Spacing="10">
-                    <Label x:Name="lblTitleSpecialties" FontAttributes="Bold" FontSize="18" TextColor="#4285F4"/>
-                    <Label Text="Món ăn đặc sản của quán..." TextColor="Black" FontSize="16"/>
-                </VerticalStackLayout>
-            </Border>
-
-            <Button x:Name="btnViewMap" Clicked="OnBackButtonClicked" BackgroundColor="#4285F4" TextColor="White" CornerRadius="25" HeightRequest="50" Margin="0,20,0,0"/>
-        </VerticalStackLayout>
+        </Grid>
     </ScrollView>
 </ContentPage>
