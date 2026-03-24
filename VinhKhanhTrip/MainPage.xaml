@@ -4,49 +4,94 @@
              xmlns:maps="clr-namespace:Microsoft.Maui.Controls.Maps;assembly=Microsoft.Maui.Controls.Maps"
              x:Class="VinhKhanhTrip.MainPage"
              Shell.NavBarIsVisible="False"
-             BackgroundColor="#0D0D11">
+             BackgroundColor="#121212">
 
-    <Grid>
-        <maps:Map x:Name="map" />
+    <ContentPage.Resources>
+        <Color x:Key="GoldLuxury">#D4AF37</Color>
+    </ContentPage.Resources>
 
-        <VerticalStackLayout Margin="15,45,15,0" VerticalOptions="Start" Spacing="0">
-            <Border BackgroundColor="#CC1A1A22" Stroke="#D4AF37" StrokeThickness="1" StrokeShape="RoundRectangle 25">
-                <SearchBar x:Name="searchBar" PlaceholderColor="#888899" TextColor="White" CancelButtonColor="#D4AF37"
-                           TextChanged="OnSearchTextChanged" SearchButtonPressed="OnSearchButtonPressed"/>
-            </Border>
+    <Grid RowDefinitions="Auto, *">
 
-            <Border x:Name="SuggestionBox" IsVisible="False" BackgroundColor="#F01A1A22" Margin="10,2,10,0" 
-                    StrokeShape="RoundRectangle 10" MaximumHeightRequest="200" ZIndex="100">
-                <CollectionView x:Name="SuggestionList" SelectionMode="Single" SelectionChanged="OnSuggestionSelected">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate>
-                            <Label Text="{Binding Ten}" Padding="15,10" FontAttributes="Bold" TextColor="#D4AF37" />
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-            </Border>
-        </VerticalStackLayout>
+        <Image Grid.Row="0" 
+               Source="header_banner2.jpg" 
+               Aspect="AspectFill" 
+               HorizontalOptions="Fill" 
+               HeightRequest="80" 
+               BackgroundColor="#121212" 
+               Margin="0,30,0,0" />
 
-        <Border x:Name="DistIndicator" HorizontalOptions="Center" VerticalOptions="Start" Margin="0,115,0,0" 
-                BackgroundColor="#EE0D0D11" Padding="20,10" Stroke="#D4AF37" StrokeThickness="1" StrokeShape="RoundRectangle 20" IsVisible="False">
-            <VerticalStackLayout HorizontalOptions="Center">
-                <Label x:Name="lblTargetName" TextColor="#D4AF37" FontSize="12" FontAttributes="Bold" HorizontalOptions="Center"/>
-                <Label x:Name="lblDistance" TextColor="White" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center"/>
-            </VerticalStackLayout>
-        </Border>
+        <Grid Grid.Row="1">
+            <maps:Map x:Name="map" />
 
-        <Border HorizontalOptions="End" VerticalOptions="End" Margin="15,0,15,30" BackgroundColor="#AA1A1A22" 
-                Stroke="#2A2A35" StrokeShape="RoundRectangle 25" Padding="10">
-            <VerticalStackLayout Spacing="8">
-                <Label Text="Giả lập vị trí" TextColor="White" FontSize="10" HorizontalOptions="Center"/>
-                <Switch x:Name="FakeModeSwitch" IsToggled="True" Toggled="OnFakeModeToggled" ThumbColor="#D4AF37" OnColor="#4285F4" HorizontalOptions="Center"/>
-                <Grid RowDefinitions="45,45,45" ColumnDefinitions="45,45,45" IsVisible="{Binding IsToggled, Source={x:Reference FakeModeSwitch}}" Margin="0,5,0,0">
-                    <Button Grid.Row="0" Grid.Column="1" Text="▲" Clicked="UpClicked" CornerRadius="22" BackgroundColor="#4285F4"/>
-                    <Button Grid.Row="1" Grid.Column="0" Text="◀" Clicked="LeftClicked" CornerRadius="22" BackgroundColor="#4285F4"/>
-                    <Button Grid.Row="1" Grid.Column="2" Text="▶" Clicked="RightClicked" CornerRadius="22" BackgroundColor="#4285F4"/>
-                    <Button Grid.Row="2" Grid.Column="1" Text="▼" Clicked="DownClicked" CornerRadius="22" BackgroundColor="#4285F4"/>
+            <VerticalStackLayout VerticalOptions="Start" Margin="15,10,15,0" Spacing="8">
+
+                <Border BackgroundColor="#E61A1A1A" Stroke="{StaticResource GoldLuxury}" StrokeThickness="1" StrokeShape="RoundRectangle 22" HeightRequest="40">
+                    <Grid ColumnDefinitions="Auto, *">
+                        <Image Source="gold_magnifier.png" WidthRequest="18" Margin="12,0,5,0"/>
+                        <SearchBar Grid.Column="1" x:Name="searchBar" Placeholder="Tìm kiếm..." TextColor="White" 
+                                   PlaceholderColor="#888888" BackgroundColor="Transparent" FontSize="13"
+                                   TextChanged="OnSearchTextChanged" SearchButtonPressed="OnSearchButtonPressed"/>
+                    </Grid>
+                </Border>
+
+                <Grid ColumnDefinitions="*, Auto">
+
+                    <Border x:Name="SuggestionBox" IsVisible="False" BackgroundColor="#F01A1A1A" Stroke="{StaticResource GoldLuxury}" 
+                            StrokeThickness="1" StrokeShape="RoundRectangle 10" Margin="0,0,50,0" ZIndex="100" VerticalOptions="Start">
+                        <CollectionView x:Name="SuggestionList" SelectionMode="Single" SelectionChanged="OnSuggestionSelected">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Label Text="{Binding Ten}" Padding="15,10" TextColor="{StaticResource GoldLuxury}" FontAttributes="Bold"/>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </Border>
+
+                    <Border x:Name="DistIndicator" IsVisible="False"
+                            HorizontalOptions="Center" VerticalOptions="Center"
+                            BackgroundColor="#EE1A1A1A" Stroke="{StaticResource GoldLuxury}" 
+                            StrokeThickness="1" StrokeShape="RoundRectangle 15" Padding="10,5">
+                        <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                            <Label x:Name="lblTargetName" TextColor="White" FontSize="11" VerticalOptions="Center"/>
+                            <Label x:Name="lblDistance" TextColor="{StaticResource GoldLuxury}" FontSize="14" FontAttributes="Bold" VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
+                    </Border>
+
+                    <Border Grid.Column="1" HorizontalOptions="End" VerticalOptions="Center" WidthRequest="38" HeightRequest="38" 
+                            Stroke="{StaticResource GoldLuxury}" StrokeThickness="1.5" StrokeShape="RoundRectangle 19" BackgroundColor="#1A1A1A" ZIndex="101">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnLanguageBtnClicked" />
+                        </Border.GestureRecognizers>
+                        <Label x:Name="lblLanguage" Text="VN" TextColor="{StaticResource GoldLuxury}" 
+                               FontSize="11" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
+                    </Border>
                 </Grid>
+
+                <Border x:Name="LanguageMenu" IsVisible="False" HorizontalOptions="End" 
+                        Margin="0,-3,0,0" BackgroundColor="#1A1A1A" Stroke="{StaticResource GoldLuxury}" StrokeThickness="1" StrokeShape="RoundRectangle 12" WidthRequest="100" ZIndex="110">
+                    <VerticalStackLayout Padding="5">
+                        <Button Text="Tiếng Việt" Clicked="OnVietnameseSelected" TextColor="White" BackgroundColor="Transparent" FontSize="12" Padding="0" HeightRequest="35"/>
+                        <Button Text="English" Clicked="OnEnglishSelected" TextColor="White" BackgroundColor="Transparent" FontSize="12" Padding="0" HeightRequest="35"/>
+                    </VerticalStackLayout>
+                </Border>
+
             </VerticalStackLayout>
-        </Border>
+
+            <Border HorizontalOptions="End" VerticalOptions="End" Margin="10,0,10,15" BackgroundColor="#F01A1A1A" 
+                    Stroke="{StaticResource GoldLuxury}" StrokeThickness="1" StrokeShape="RoundRectangle 25" Padding="8">
+                <VerticalStackLayout Spacing="5">
+                    <Label Text="DI CHUYỂN" TextColor="{StaticResource GoldLuxury}" FontSize="8" HorizontalOptions="Center" FontAttributes="Bold"/>
+                    <Switch x:Name="FakeModeSwitch" Scale="0.7" ThumbColor="{StaticResource GoldLuxury}" OnColor="#33D4AF37" HorizontalOptions="Center" Toggled="OnFakeModeToggled"/>
+                    <Grid RowDefinitions="35,35,35" ColumnDefinitions="35,35,35" RowSpacing="2" ColumnSpacing="2"
+                          IsVisible="{Binding IsToggled, Source={x:Reference FakeModeSwitch}}">
+                        <Button Grid.Row="0" Grid.Column="1" Text="▲" Clicked="UpClicked" BackgroundColor="{StaticResource GoldLuxury}" TextColor="Black" CornerRadius="17" Padding="0"/>
+                        <Button Grid.Row="1" Grid.Column="0" Text="◀" Clicked="LeftClicked" BackgroundColor="{StaticResource GoldLuxury}" TextColor="Black" CornerRadius="17" Padding="0"/>
+                        <Button Grid.Row="1" Grid.Column="2" Text="▶" Clicked="RightClicked" BackgroundColor="{StaticResource GoldLuxury}" TextColor="Black" CornerRadius="17" Padding="0"/>
+                        <Button Grid.Row="2" Grid.Column="1" Text="▼" Clicked="DownClicked" BackgroundColor="{StaticResource GoldLuxury}" TextColor="Black" CornerRadius="17" Padding="0"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+        </Grid>
     </Grid>
 </ContentPage>

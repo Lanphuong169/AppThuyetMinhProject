@@ -5,7 +5,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:VinhKhanhTrip"
     Shell.FlyoutBehavior="Disabled"
-    Title="VinhKhanhTrip">
+    Shell.TabBarBackgroundColor="#121212"
+    Shell.TabBarForegroundColor="#D4AF37"
+    Shell.TabBarTitleColor="#D4AF37"
+    Shell.TabBarUnselectedColor="#888888">
 
     <TabBar>
         <Tab Title="Bản đồ" Icon="map.png">

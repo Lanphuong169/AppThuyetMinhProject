@@ -1,4 +1,4 @@
-﻿<?xml version = "1.0" encoding = "UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:VinhKhanhTrip"
@@ -9,6 +9,22 @@
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <Color x:Key="PrimaryBlack">#000000</Color>
+            <Color x:Key="DeepBlack">#080808</Color>
+            <Color x:Key="RichGold">#D4AF37</Color>
+            <Color x:Key="SoftGold">#F0E68C</Color>
+            <Color x:Key="CharcoalGrey">#2C2C2C</Color>
+            <Color x:Key="LightGrey">#E0E0E0</Color>
+            <Color x:Key="ButtonTextBlack">#000000</Color>
+
+            <Style x:Key="GoldButtonStyle" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="{StaticResource RichGold}" />
+                <Setter Property="TextColor" Value="{StaticResource ButtonTextBlack}" />
+                <Setter Property="CornerRadius" Value="20" />
+                <Setter Property="FontAttributes" Value="Bold" />
+            </Style>
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -38,16 +38,34 @@ public partial class DanhSachPage : ContentPage
     private void UpdateCategoryUI(string selected)
     {
         if (BtnAll == null || BtnOc == null || BtnLau == null) return;
+        if (LblAll == null || LblOc == null || LblLau == null) return;
 
-        // Reset màu
-        BtnAll.BackgroundColor = Color.FromArgb("#1A1A22");
-        BtnOc.BackgroundColor = Color.FromArgb("#1A1A22");
-        BtnLau.BackgroundColor = Color.FromArgb("#1A1A22");
+        // 1. Reset tất cả về trạng thái chưa chọn (Nền trong suốt, chữ màu Đồng ánh kim chuẩn)
+        BtnAll.BackgroundColor = Colors.Transparent;
+        LblAll.TextColor = Color.FromArgb("#C99446");
 
-        // Nhuộm vàng
-        if (selected == "All") BtnAll.BackgroundColor = Color.FromArgb("#D4AF37");
-        else if (selected == "Oc") BtnOc.BackgroundColor = Color.FromArgb("#D4AF37");
-        else if (selected == "Lau") BtnLau.BackgroundColor = Color.FromArgb("#D4AF37");
+        BtnOc.BackgroundColor = Colors.Transparent;
+        LblOc.TextColor = Color.FromArgb("#C99446");
+
+        BtnLau.BackgroundColor = Colors.Transparent;
+        LblLau.TextColor = Color.FromArgb("#C99446");
+
+        // 2. Nhuộm Đồng cho nút đang được chọn (Nền Đồng, chữ Đen)
+        if (selected == "All")
+        {
+            BtnAll.BackgroundColor = Color.FromArgb("#C99446");
+            LblAll.TextColor = Colors.Black;
+        }
+        else if (selected == "Oc")
+        {
+            BtnOc.BackgroundColor = Color.FromArgb("#C99446");
+            LblOc.TextColor = Colors.Black;
+        }
+        else if (selected == "Lau")
+        {
+            BtnLau.BackgroundColor = Color.FromArgb("#C99446");
+            LblLau.TextColor = Colors.Black;
+        }
     }
 
     private void OnSearchTextChanged(object sender, TextChangedEventArgs e)

@@ -3,31 +3,33 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="VinhKhanhTrip.CaiDatPage"
              Title="Cài Đặt"
-             BackgroundColor="#F2F2F6">
+             BackgroundColor="#080808">
 
     <ScrollView Padding="20">
-        <VerticalStackLayout Spacing="20">
-            <Label Text="Tùy chỉnh hệ thống" FontAttributes="Bold" FontSize="18" TextColor="Gray"/>
-            <Border BackgroundColor="White" StrokeShape="RoundRectangle 15" Padding="15">
+        <VerticalStackLayout Spacing="25">
+            <Label Text="CÀI ĐẶT HỆ THỐNG" TextColor="#C99446" FontAttributes="Bold" FontSize="14" CharacterSpacing="2" HorizontalOptions="Center" Margin="0,20,0,10"/>
+
+            <Label Text="Tính năng" FontAttributes="Bold" FontSize="16" TextColor="#E2C792"/>
+            <Border BackgroundColor="#1A1A1A" Stroke="#C99446" StrokeThickness="0.5" StrokeShape="RoundRectangle 15" Padding="15">
                 <VerticalStackLayout Spacing="15">
                     <Grid ColumnDefinitions="*, Auto">
-                        <Label Text="🔊 Thuyết minh tự động" VerticalOptions="Center" TextColor="Black"/>
-                        <Switch Grid.Column="1" IsToggled="True"/>
+                        <Label Text="🔊 Thuyết minh tự động" TextColor="White" VerticalOptions="Center"/>
+                        <Switch Grid.Column="1" IsToggled="True" ThumbColor="#C99446" OnColor="#33C99446"/>
                     </Grid>
-                    <BoxView HeightRequest="1" Color="#EEEEEE"/>
+                    <BoxView HeightRequest="0.5" Color="#33C99446"/>
                     <Grid ColumnDefinitions="*, Auto">
-                        <Label Text="📍 Hiển thị Geofence" VerticalOptions="Center" TextColor="Black"/>
-                        <Switch Grid.Column="1" IsToggled="True"/>
+                        <Label Text="📍 Hiển thị vùng Geofence" TextColor="White" VerticalOptions="Center"/>
+                        <Switch Grid.Column="1" IsToggled="True" ThumbColor="#C99446" OnColor="#33C99446"/>
                     </Grid>
                 </VerticalStackLayout>
             </Border>
 
-            <Label Text="Ngôn ngữ / Language" FontAttributes="Bold" FontSize="18" TextColor="Gray" Margin="0,10,0,0"/>
-            <Border BackgroundColor="White" StrokeShape="RoundRectangle 15" Padding="5">
+            <Label Text="Ngôn ngữ" FontAttributes="Bold" FontSize="16" TextColor="#E2C792"/>
+            <Border BackgroundColor="#1A1A1A" Stroke="#C99446" StrokeThickness="0.5" StrokeShape="RoundRectangle 15" Padding="5">
                 <VerticalStackLayout>
-                    <Button Text="🇻🇳 Tiếng Việt" Clicked="OnVietnameseClicked" BackgroundColor="Transparent" TextColor="Black" HorizontalOptions="Start"/>
-                    <BoxView HeightRequest="1" Color="#EEEEEE"/>
-                    <Button Text="🇬🇧 English" Clicked="OnEnglishClicked" BackgroundColor="Transparent" TextColor="Black" HorizontalOptions="Start"/>
+                    <Button Text="🇻🇳 Tiếng Việt" TextColor="White" BackgroundColor="Transparent" HorizontalOptions="Fill" ContentLayout="Left, 20"/>
+                    <BoxView HeightRequest="0.5" Color="#33C99446" Margin="15,0"/>
+                    <Button Text="🇬🇧 English" TextColor="White" BackgroundColor="Transparent" HorizontalOptions="Fill" ContentLayout="Left, 20"/>
                 </VerticalStackLayout>
             </Border>
         </VerticalStackLayout>

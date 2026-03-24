@@ -11,6 +11,11 @@ namespace VinhKhanhTrip.Models
         public double Lng { get; set; }
 
         public string ImageUrl { get; set; } = "";
+
+        // THÊM 2 BIẾN NÀY ĐỂ HIỂN THỊ 2 ẢNH NHỎ BÊN PHẢI
+        public string ImageUrl2 { get; set; } = "";
+        public string ImageUrl3 { get; set; } = "";
+
         public double Rating { get; set; }
         public string OpeningHours { get; set; } = "";
         public string PriceRange { get; set; } = "";
