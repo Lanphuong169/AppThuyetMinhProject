@@ -1,5 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-using System.Linq;
+﻿using CommunityToolkit.Mvvm.Messaging;
 using VinhKhanhTrip.Helpers;
 
 namespace VinhKhanhTrip;
@@ -9,18 +8,23 @@ public partial class AppShell : Shell
     public AppShell()
     {
         InitializeComponent();
-        MessagingCenter.Subscribe<Page>(this, "LanguageChanged", (sender) => {
-            UpdateTabBarStrings();
+
+        WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, (r, m) =>
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                UpdateTabBarStrings();
+            });
         });
-        UpdateTabBarStrings(); // Gọi lần đầu
+
+        UpdateTabBarStrings();
     }
 
     private void UpdateTabBarStrings()
     {
-        // Tìm và đổi tên cho từng Tab trong TabBar
-        var tabs = this.Items.FirstOrDefault()?.Items;
-        if (tabs != null && tabs.Count >= 3)
+        if (Items.Count > 0 && Items[0].Items.Count >= 3)
         {
+            var tabs = Items[0].Items;
             tabs[0].Title = LanguageManager.Get("TabMap");
             tabs[1].Title = LanguageManager.Get("TabList");
             tabs[2].Title = LanguageManager.Get("TabSettings");

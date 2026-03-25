@@ -1,121 +1,145 @@
 ﻿using System;
 using System.Linq;
-using System.Text;
-using System.Globalization;
-using System.Threading;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Media;
-using Microsoft.Maui.ApplicationModel;
-using VinhKhanhTrip.Data;
 using VinhKhanhTrip.Models;
+using VinhKhanhTrip.Data;
+using VinhKhanhTrip.Helpers;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace VinhKhanhTrip;
 
 public partial class DanhSachPage : ContentPage
 {
     private CancellationTokenSource? _ttsCts;
+    private IEnumerable<Locale>? _cachedLocales;
+    private string _currentCategory = "All";
 
     public DanhSachPage()
     {
         InitializeComponent();
-        if (DanhSachCV != null)
-            DanhSachCV.ItemsSource = DanhSachQuanAn.dsQuan;
+
+        // Gán dữ liệu ban đầu
+        DanhSachCV.ItemsSource = DanhSachQuanAn.dsQuan;
+
+        // Đăng ký nhận tin đổi ngôn ngữ để cập nhật giao diện
+        WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, (r, m) =>
+        {
+            MainThread.BeginInvokeOnMainThread(UpdateUI);
+        });
+
+        // Tải trước danh sách giọng đọc
+        Task.Run(async () => _cachedLocales = await TextToSpeech.Default.GetLocalesAsync());
+
+        UpdateUI();
     }
 
-    public void OnCategoryTapped(object? sender, TappedEventArgs e)
+    // Hàm cập nhật ngôn ngữ cho các Label tĩnh
+    private void UpdateUI()
     {
-        string category = e.Parameter?.ToString() ?? "All";
-
-        if (category == "All")
-            DanhSachCV.ItemsSource = DanhSachQuanAn.dsQuan;
-        else
-            DanhSachCV.ItemsSource = DanhSachQuanAn.dsQuan.Where(q => q.Loai == category).ToList();
-
-        UpdateCategoryUI(category);
+        searchBar.Placeholder = LanguageManager.Get("Search");
+        LblAll.Text = LanguageManager.Get("TabAll") ?? "Tất cả";
+        // Bạn có thể thêm các Label khác vào LanguageManager để dịch ở đây
     }
 
-    private void UpdateCategoryUI(string selected)
-    {
-        if (BtnAll == null || BtnOc == null || BtnLau == null) return;
-        if (LblAll == null || LblOc == null || LblLau == null) return;
-
-        // 1. Reset tất cả về trạng thái chưa chọn (Nền trong suốt, chữ màu Đồng ánh kim chuẩn)
-        BtnAll.BackgroundColor = Colors.Transparent;
-        LblAll.TextColor = Color.FromArgb("#C99446");
-
-        BtnOc.BackgroundColor = Colors.Transparent;
-        LblOc.TextColor = Color.FromArgb("#C99446");
-
-        BtnLau.BackgroundColor = Colors.Transparent;
-        LblLau.TextColor = Color.FromArgb("#C99446");
-
-        // 2. Nhuộm Đồng cho nút đang được chọn (Nền Đồng, chữ Đen)
-        if (selected == "All")
-        {
-            BtnAll.BackgroundColor = Color.FromArgb("#C99446");
-            LblAll.TextColor = Colors.Black;
-        }
-        else if (selected == "Oc")
-        {
-            BtnOc.BackgroundColor = Color.FromArgb("#C99446");
-            LblOc.TextColor = Colors.Black;
-        }
-        else if (selected == "Lau")
-        {
-            BtnLau.BackgroundColor = Color.FromArgb("#C99446");
-            LblLau.TextColor = Colors.Black;
-        }
-    }
-
+    // Xử lý Tìm kiếm
     private void OnSearchTextChanged(object sender, TextChangedEventArgs e)
     {
-        var keyword = RemoveDiacritics(e.NewTextValue ?? "");
-        if (string.IsNullOrWhiteSpace(keyword))
-            DanhSachCV.ItemsSource = DanhSachQuanAn.dsQuan;
-        else
-            DanhSachCV.ItemsSource = DanhSachQuanAn.dsQuan
-                .Where(q => RemoveDiacritics(q.Ten).Contains(keyword)).ToList();
+        FilterData(e.NewTextValue, _currentCategory);
     }
 
+    // Xử lý Lọc theo Category
+    private void OnCategoryTapped(object sender, EventArgs e)
+    {
+        var border = sender as Border;
+        var category = (sender as Border)?.GestureRecognizers
+                       .OfType<TapGestureRecognizer>()
+                       .FirstOrDefault()?.CommandParameter?.ToString();
+
+        if (category == null) return;
+        _currentCategory = category;
+
+        // Đổi màu nút để người dùng biết đang chọn
+        ResetCategoryColors();
+        if (border != null)
+        {
+            border.BackgroundColor = Color.FromArgb("#C99446");
+            var label = border.Content as Label;
+            if (label != null) { label.TextColor = Colors.Black; label.FontAttributes = FontAttributes.Bold; }
+        }
+
+        FilterData(searchBar.Text, _currentCategory);
+    }
+
+    private void ResetCategoryColors()
+    {
+        var buttons = new[] { BtnAll, BtnOc, BtnLau };
+        var labels = new[] { LblAll, LblOc, LblLau };
+
+        foreach (var b in buttons) b.BackgroundColor = Colors.Transparent;
+        foreach (var l in labels) { l.TextColor = Color.FromArgb("#C99446"); l.FontAttributes = FontAttributes.None; }
+    }
+
+    private void FilterData(string searchText, string category)
+    {
+        var filtered = DanhSachQuanAn.dsQuan.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(searchText))
+            filtered = filtered.Where(q => q.Ten.ToLower().Contains(searchText.ToLower()));
+
+        if (category != "All")
+            filtered = filtered.Where(q => q.Loai == category);
+
+        DanhSachCV.ItemsSource = filtered.ToList();
+    }
+
+    // Chuyển sang trang chi tiết
     private async void OnItemSelected(object sender, SelectionChangedEventArgs e)
     {
         if (e.CurrentSelection.FirstOrDefault() is QuanAn selected)
         {
-            DanhSachCV.SelectedItem = null;
-            await Navigation.PushModalAsync(new QuanAnDetailPage(selected));
+            await Navigation.PushAsync(new QuanAnDetailPage(selected));
         }
+        DanhSachCV.SelectedItem = null;
     }
 
-    private void OnMapButtonClicked(object sender, EventArgs e)
+    private async void OnMapButtonClicked(object sender, EventArgs e)
     {
         if (sender is Button btn && btn.CommandParameter is QuanAn q)
         {
-            Microsoft.Maui.ApplicationModel.Map.Default.OpenAsync(new Location(q.Lat, q.Lng),
-                new MapLaunchOptions { Name = q.Ten });
+            await Navigation.PushAsync(new QuanAnDetailPage(q));
         }
     }
 
+    // HÀM QUAN TRỌNG: Thuyết minh có tự động dịch
     private async void OnSpeakerButtonClicked(object sender, EventArgs e)
     {
         if (sender is Button btn && btn.CommandParameter is QuanAn q)
         {
-            if (_ttsCts != null) _ttsCts.Cancel();
-            _ttsCts = new CancellationTokenSource();
-            await TextToSpeech.Default.SpeakAsync(q.Ten + ". " + q.MoTa, cancelToken: _ttsCts.Token);
-        }
-    }
+            try
+            {
+                if (_ttsCts != null) { _ttsCts.Cancel(); _ttsCts.Dispose(); }
+                _ttsCts = new CancellationTokenSource();
 
-    private string RemoveDiacritics(string text)
-    {
-        if (string.IsNullOrWhiteSpace(text)) return text;
-        var normalizedString = text.ToLower().Normalize(NormalizationForm.FormD);
-        var stringBuilder = new StringBuilder();
-        foreach (var c in normalizedString)
-        {
-            if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
-                stringBuilder.Append(c);
+                // 1. Dùng hàm để Translate từ tiếng Việt gốc sang ngôn ngữ đang chọn
+                string cauGoc = $"{q.Ten}. {q.MoTa}";
+                string textToSpeak = await TranslationHelper.TranslateAsync(cauGoc, LanguageManager.CurrentLang);
+
+                // 2. Tìm giọng đọc chuẩn
+                if (_cachedLocales == null) _cachedLocales = await TextToSpeech.Default.GetLocalesAsync();
+                string targetTag = LanguageManager.CurrentLang.Split('-')[0].ToLower();
+                var locale = _cachedLocales?.FirstOrDefault(l => l.Language.ToLower().StartsWith(targetTag));
+
+                // 3. Phát âm thanh ngay lập tức
+                await TextToSpeech.Default.SpeakAsync(textToSpeak, new SpeechOptions { Locale = locale }, cancelToken: _ttsCts.Token);
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Lỗi", "Không thể phát âm thanh: " + ex.Message, "OK");
+            }
         }
-        return stringBuilder.ToString().Normalize(NormalizationForm.FormC).Replace("đ", "d");
     }
 }

@@ -2,6 +2,8 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:maps="clr-namespace:Microsoft.Maui.Controls.Maps;assembly=Microsoft.Maui.Controls.Maps"
+             xmlns:models="clr-namespace:VinhKhanhTrip.Models"
+             x:DataType="ContentPage"
              x:Class="VinhKhanhTrip.MainPage"
              Shell.NavBarIsVisible="False"
              BackgroundColor="#121212">
@@ -11,7 +13,6 @@
     </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto, *">
-
         <Image Grid.Row="0" 
                Source="header_banner2.jpg" 
                Aspect="AspectFill" 
@@ -24,24 +25,24 @@
             <maps:Map x:Name="map" />
 
             <VerticalStackLayout VerticalOptions="Start" Margin="15,10,15,0" Spacing="8">
-
                 <Border BackgroundColor="#E61A1A1A" Stroke="{StaticResource GoldLuxury}" StrokeThickness="1" StrokeShape="RoundRectangle 22" HeightRequest="40">
                     <Grid ColumnDefinitions="Auto, *">
                         <Image Source="gold_magnifier.png" WidthRequest="18" Margin="12,0,5,0"/>
-                        <SearchBar Grid.Column="1" x:Name="searchBar" Placeholder="Tìm kiếm..." TextColor="White" 
+                        <SearchBar Grid.Column="1" x:Name="searchBar" 
+                                   Placeholder="Tìm kiếm..." TextColor="White" 
                                    PlaceholderColor="#888888" BackgroundColor="Transparent" FontSize="13"
-                                   TextChanged="OnSearchTextChanged" SearchButtonPressed="OnSearchButtonPressed"/>
+                                   TextChanged="OnSearchTextChanged" 
+                                   SearchButtonPressed="OnSearchButtonPressed"/>
                     </Grid>
                 </Border>
 
                 <Grid ColumnDefinitions="*, Auto">
-
                     <Border x:Name="SuggestionBox" IsVisible="False" BackgroundColor="#F01A1A1A" Stroke="{StaticResource GoldLuxury}" 
                             StrokeThickness="1" StrokeShape="RoundRectangle 10" Margin="0,0,50,0" ZIndex="100" VerticalOptions="Start">
                         <CollectionView x:Name="SuggestionList" SelectionMode="Single" SelectionChanged="OnSuggestionSelected">
                             <CollectionView.ItemTemplate>
-                                <DataTemplate>
-                                    <Label Text="{Binding Ten}" Padding="15,10" TextColor="{StaticResource GoldLuxury}" FontAttributes="Bold"/>
+                                <DataTemplate x:DataType="models:QuanAn">
+                                    <Label Text="{Binding Ten}" Padding="15,10" TextColor="#D4AF37" FontAttributes="Bold"/>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
                         </CollectionView>
@@ -68,13 +69,14 @@
                 </Grid>
 
                 <Border x:Name="LanguageMenu" IsVisible="False" HorizontalOptions="End" 
-                        Margin="0,-3,0,0" BackgroundColor="#1A1A1A" Stroke="{StaticResource GoldLuxury}" StrokeThickness="1" StrokeShape="RoundRectangle 12" WidthRequest="100" ZIndex="110">
+                        Margin="0,-3,0,0" BackgroundColor="#1A1A1A" Stroke="{StaticResource GoldLuxury}" StrokeThickness="1" StrokeShape="RoundRectangle 12" WidthRequest="110" ZIndex="110">
                     <VerticalStackLayout Padding="5">
                         <Button Text="Tiếng Việt" Clicked="OnVietnameseSelected" TextColor="White" BackgroundColor="Transparent" FontSize="12" Padding="0" HeightRequest="35"/>
-                        <Button Text="English" Clicked="OnEnglishSelected" TextColor="White" BackgroundColor="Transparent" FontSize="12" Padding="0" HeightRequest="35"/>
+                        <Button Text="Deutsch" Clicked="OnGermanSelected" TextColor="White" BackgroundColor="Transparent" FontSize="12" Padding="0" HeightRequest="35"/>
+                        <Button Text="Français" Clicked="OnFrenchSelected" TextColor="White" BackgroundColor="Transparent" FontSize="12" Padding="0" HeightRequest="35"/>
+                        <Button Text="Русский" Clicked="OnRussianSelected" TextColor="White" BackgroundColor="Transparent" FontSize="12" Padding="0" HeightRequest="35"/>
                     </VerticalStackLayout>
                 </Border>
-
             </VerticalStackLayout>
 
             <Border HorizontalOptions="End" VerticalOptions="End" Margin="10,0,10,15" BackgroundColor="#F01A1A1A" 
@@ -82,6 +84,7 @@
                 <VerticalStackLayout Spacing="5">
                     <Label Text="DI CHUYỂN" TextColor="{StaticResource GoldLuxury}" FontSize="8" HorizontalOptions="Center" FontAttributes="Bold"/>
                     <Switch x:Name="FakeModeSwitch" Scale="0.7" ThumbColor="{StaticResource GoldLuxury}" OnColor="#33D4AF37" HorizontalOptions="Center" Toggled="OnFakeModeToggled"/>
+
                     <Grid RowDefinitions="35,35,35" ColumnDefinitions="35,35,35" RowSpacing="2" ColumnSpacing="2"
                           IsVisible="{Binding IsToggled, Source={x:Reference FakeModeSwitch}}">
                         <Button Grid.Row="0" Grid.Column="1" Text="▲" Clicked="UpClicked" BackgroundColor="{StaticResource GoldLuxury}" TextColor="Black" CornerRadius="17" Padding="0"/>
@@ -91,7 +94,6 @@
                     </Grid>
                 </VerticalStackLayout>
             </Border>
-
         </Grid>
     </Grid>
 </ContentPage>

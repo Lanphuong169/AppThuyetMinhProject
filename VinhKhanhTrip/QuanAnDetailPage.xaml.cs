@@ -1,13 +1,12 @@
-﻿using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Media;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading;
-using VinhKhanhTrip.Helpers;
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Media;
+using Microsoft.Maui.ApplicationModel; // Cần thiết để mở bản đồ
 using VinhKhanhTrip.Models;
+using VinhKhanhTrip.Helpers;
 
 namespace VinhKhanhTrip;
 
@@ -15,66 +14,56 @@ public partial class QuanAnDetailPage : ContentPage
 {
     private QuanAn _poi;
     private CancellationTokenSource? _ttsCts;
+    private IEnumerable<Locale>? _cachedLocales;
 
     public QuanAnDetailPage(QuanAn poi)
     {
         InitializeComponent();
         _poi = poi;
         BindingContext = _poi;
-        PopulateMenuItems();
     }
 
-    private void PopulateMenuItems()
+    // FIX LỖI ĐỎ: Thêm hàm xử lý khi bấm nút "Xem bản đồ"
+    private async void OnViewMapClicked(object sender, EventArgs e)
     {
-        if (_poi.MenuItems == null || !_poi.MenuItems.Any()) return;
-        MenuItemsLayout.Children.Clear();
-        foreach (var item in _poi.MenuItems)
+        if (_poi != null)
         {
-            var chip = new Border
+            var location = new Location(_poi.Lat, _poi.Lng);
+            var options = new MapLaunchOptions { Name = _poi.Ten };
+
+            try
             {
-                BackgroundColor = Color.FromArgb("#1A1A22"),
-                Stroke = Color.FromArgb("#D4AF37"),
-                StrokeThickness = 1,
-                StrokeShape = new RoundRectangle { CornerRadius = 15 },
-                Padding = new Thickness(15, 8)
-            };
-            chip.Content = new Label { Text = item, TextColor = Colors.White, FontSize = 13, FontAttributes = FontAttributes.Bold };
-            MenuItemsLayout.Children.Add(chip);
+                await Microsoft.Maui.ApplicationModel.Map.Default.OpenAsync(location, options);
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Lỗi", "Không thể mở bản đồ: " + ex.Message, "OK");
+            }
         }
     }
 
     private async void OnBackButtonClicked(object sender, EventArgs e)
     {
         if (_ttsCts != null) _ttsCts.Cancel();
-        await Navigation.PopModalAsync();
+        await Navigation.PopAsync();
     }
 
-    // --- HÀM NÀY BỊ THIẾU DẪN ĐẾN LỖI XC0002 ---
     private async void OnSpeakerTapped(object sender, TappedEventArgs e)
     {
         try
         {
-            if (_ttsCts != null) _ttsCts.Cancel();
+            if (_ttsCts != null) { _ttsCts.Cancel(); _ttsCts.Dispose(); }
             _ttsCts = new CancellationTokenSource();
-            string textToSpeak = LanguageManager.TranslatePoi(_poi.Ten, _poi.MoTa);
-            var locales = await TextToSpeech.Default.GetLocalesAsync();
-            var locale = locales.FirstOrDefault(l => l.Language.StartsWith(LanguageManager.CurrentLang.Substring(0, 2), StringComparison.OrdinalIgnoreCase));
+
+            string cauGoc = $"{_poi.Ten}. {_poi.MoTa}";
+            string textToSpeak = await TranslationHelper.TranslateAsync(cauGoc, LanguageManager.CurrentLang);
+
+            if (_cachedLocales == null) _cachedLocales = await TextToSpeech.Default.GetLocalesAsync();
+            string targetTag = LanguageManager.CurrentLang.Split('-')[0].ToLower();
+            var locale = _cachedLocales?.FirstOrDefault(l => l.Language.ToLower().StartsWith(targetTag));
+
             await TextToSpeech.Default.SpeakAsync(textToSpeak, new SpeechOptions { Locale = locale }, cancelToken: _ttsCts.Token);
         }
         catch { }
-    }
-
-    private async void OnViewMapClicked(object sender, EventArgs e)
-    {
-        try
-        {
-            var location = new Location(_poi.Lat, _poi.Lng);
-            var options = new MapLaunchOptions { Name = _poi.Ten, NavigationMode = NavigationMode.Driving };
-            await Microsoft.Maui.ApplicationModel.Map.Default.OpenAsync(location, options);
-        }
-        catch (Exception ex)
-        {
-            await DisplayAlert("Lỗi", "Không thể mở bản đồ: " + ex.Message, "OK");
-        }
     }
 }
