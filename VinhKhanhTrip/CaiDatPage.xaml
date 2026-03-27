@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="VinhKhanhTrip.CaiDatPage"
              Title="Cài Đặt"
-             BackgroundColor="#080808">
+             BackgroundColor="#080808"
+             Shell.NavBarIsVisible="False">
 
     <ScrollView Padding="20">
         <VerticalStackLayout Spacing="25">
@@ -25,29 +26,60 @@
             </Border>
 
             <Label x:Name="lblLanguage" Text="Ngôn ngữ" FontAttributes="Bold" FontSize="16" TextColor="#E2C792"/>
-            <Border BackgroundColor="#1A1A1A" Stroke="#C99446" StrokeThickness="0.5" StrokeShape="RoundRectangle 15" Padding="5">
+
+            <Border BackgroundColor="#1A1A1A" Stroke="#C99446" StrokeThickness="0.5" StrokeShape="RoundRectangle 15" Padding="0,10">
                 <VerticalStackLayout>
-                    <Button Text="🇻🇳 Tiếng Việt" Clicked="OnVietnameseClicked" TextColor="White" BackgroundColor="Transparent" HorizontalOptions="Fill" ContentLayout="Left, 20"/>
+
+                    <Grid HeightRequest="45">
+                        <Label Text="🇻🇳 Tiếng Việt" TextColor="White" HorizontalOptions="Start" VerticalOptions="Center" Margin="20,0,0,0" FontSize="15"/>
+                        <Button BackgroundColor="Transparent" Clicked="OnVietnameseClicked" CornerRadius="0"/>
+                    </Grid>
                     <BoxView HeightRequest="0.5" Color="#33C99446" Margin="15,0"/>
 
-                    <Button Text="🇩🇪 Deutsch" Clicked="OnGermanClicked" TextColor="White" BackgroundColor="Transparent" HorizontalOptions="Fill" ContentLayout="Left, 20"/>
+                    <Grid HeightRequest="45">
+                        <Label Text="🇬🇧 English" TextColor="White" HorizontalOptions="Start" VerticalOptions="Center" Margin="20,0,0,0" FontSize="15"/>
+                        <Button BackgroundColor="Transparent" Clicked="OnEnglishClicked" CornerRadius="0"/>
+                    </Grid>
                     <BoxView HeightRequest="0.5" Color="#33C99446" Margin="15,0"/>
 
-                    <Button Text="🇫🇷 Français" Clicked="OnFrenchClicked" TextColor="White" BackgroundColor="Transparent" HorizontalOptions="Fill" ContentLayout="Left, 20"/>
+                    <Grid HeightRequest="45">
+                        <Label Text="🇩🇪 Deutsch" TextColor="White" HorizontalOptions="Start" VerticalOptions="Center" Margin="20,0,0,0" FontSize="15"/>
+                        <Button BackgroundColor="Transparent" Clicked="OnGermanClicked" CornerRadius="0"/>
+                    </Grid>
                     <BoxView HeightRequest="0.5" Color="#33C99446" Margin="15,0"/>
 
-                    <Button Text="🇷🇺 Русский" Clicked="OnRussianClicked" TextColor="White" BackgroundColor="Transparent" HorizontalOptions="Fill" ContentLayout="Left, 20"/>
+                    <Grid HeightRequest="45">
+                        <Label Text="🇫🇷 Français" TextColor="White" HorizontalOptions="Start" VerticalOptions="Center" Margin="20,0,0,0" FontSize="15"/>
+                        <Button BackgroundColor="Transparent" Clicked="OnFrenchClicked" CornerRadius="0"/>
+                    </Grid>
                     <BoxView HeightRequest="0.5" Color="#33C99446" Margin="15,0"/>
 
-                    <Button Text="🇯🇵 日本語" Clicked="OnJapaneseClicked" TextColor="White" BackgroundColor="Transparent" HorizontalOptions="Fill" ContentLayout="Left, 20"/>
+                    <Grid HeightRequest="45">
+                        <Label Text="🇷🇺 Русский" TextColor="White" HorizontalOptions="Start" VerticalOptions="Center" Margin="20,0,0,0" FontSize="15"/>
+                        <Button BackgroundColor="Transparent" Clicked="OnRussianClicked" CornerRadius="0"/>
+                    </Grid>
                     <BoxView HeightRequest="0.5" Color="#33C99446" Margin="15,0"/>
 
-                    <Button Text="🇰🇷 한국어" Clicked="OnKoreanClicked" TextColor="White" BackgroundColor="Transparent" HorizontalOptions="Fill" ContentLayout="Left, 20"/>
+                    <Grid HeightRequest="45">
+                        <Label Text="🇯🇵 日本語" TextColor="White" HorizontalOptions="Start" VerticalOptions="Center" Margin="20,0,0,0" FontSize="15"/>
+                        <Button BackgroundColor="Transparent" Clicked="OnJapaneseClicked" CornerRadius="0"/>
+                    </Grid>
                     <BoxView HeightRequest="0.5" Color="#33C99446" Margin="15,0"/>
 
-                    <Button Text="🇨🇳 中文" Clicked="OnChineseClicked" TextColor="White" BackgroundColor="Transparent" HorizontalOptions="Fill" ContentLayout="Left, 20"/>
+                    <Grid HeightRequest="45">
+                        <Label Text="🇰🇷 한국어" TextColor="White" HorizontalOptions="Start" VerticalOptions="Center" Margin="20,0,0,0" FontSize="15"/>
+                        <Button BackgroundColor="Transparent" Clicked="OnKoreanClicked" CornerRadius="0"/>
+                    </Grid>
+                    <BoxView HeightRequest="0.5" Color="#33C99446" Margin="15,0"/>
+
+                    <Grid HeightRequest="45">
+                        <Label Text="🇨🇳 中文" TextColor="White" HorizontalOptions="Start" VerticalOptions="Center" Margin="20,0,0,0" FontSize="15"/>
+                        <Button BackgroundColor="Transparent" Clicked="OnChineseClicked" CornerRadius="0"/>
+                    </Grid>
+
                 </VerticalStackLayout>
             </Border>
+
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

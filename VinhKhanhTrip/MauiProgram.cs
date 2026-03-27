@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
+using Plugin.Maui.Audio; // Khai báo thư viện Audio
+using Microsoft.Extensions.DependencyInjection;
 
 namespace VinhKhanhTrip;
 
@@ -17,6 +19,9 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
+
+        // Kích hoạt thư viện Plugin.Maui.Audio
+        builder.Services.AddSingleton<IAudioManager>(AudioManager.Current);
 
         // --- ÉP MÀU VÀNG GOLD CHO KÍNH LÚP (ANDROID) ---
 #if ANDROID

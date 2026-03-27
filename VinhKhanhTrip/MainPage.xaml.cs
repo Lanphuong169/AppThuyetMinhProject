@@ -1,36 +1,42 @@
 ﻿using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Maps;
-using Microsoft.Maui.Media;
 using VinhKhanhTrip.Models;
 using VinhKhanhTrip.Data;
 using VinhKhanhTrip.Helpers;
 using CommunityToolkit.Mvvm.Messaging;
+using Plugin.Maui.Audio;
+using System.Net.Http;
 
 namespace VinhKhanhTrip;
 
 public partial class MainPage : ContentPage
 {
     private readonly Color GoldLuxury = Color.FromArgb("#D4AF37");
+
+    // Đã thêm dấu "?" để fix lỗi Non-nullable property
+    public Location? CurrentLocation { get; set; }
+
     Location vitriFake = new Location(10.762850, 106.701950);
     Circle fakeBlueDot = new Circle();
-    CancellationTokenSource? _ttsCts;
+
+    // TRÌNH PHÁT AUDIO VÀ HTTPCLIENT CHO CLOUD TTS
+    private IAudioPlayer? _audioPlayer;
+    private static readonly HttpClient _httpClient = new HttpClient();
+
     private Polyline[] _guideLines = new Polyline[6];
     private HashSet<string> _trangThaiTrongVung = new HashSet<string>();
     private bool _isSpeaking = false;
-    private IEnumerable<Locale>? _cachedLocales;
 
     public MainPage()
     {
         InitializeComponent();
         SetupMap();
-        _ = Task.Run(async () => _cachedLocales = await TextToSpeech.Default.GetLocalesAsync());
         UpdateUIStrings();
     }
 
@@ -93,40 +99,69 @@ public partial class MainPage : ContentPage
         WeakReferenceMessenger.Default.Send(new LanguageChangedMessage());
     }
 
+    // --- HÀM PHÁT ÂM THANH CLOUD TTS ---
+    // --- HÀM PHÁT ÂM THANH CLOUD TTS ĐÃ SỬA LỖI ---
     private async Task PhatAmThanh(string ten, string moTa)
     {
         try
         {
-            if (_ttsCts != null) { _ttsCts.Cancel(); _ttsCts.Dispose(); }
-            _ttsCts = new CancellationTokenSource();
             _isSpeaking = true;
 
-            string currentLang = LanguageManager.CurrentLang;
-
-            // BƯỚC ĐỘT PHÁ: KHÔNG GỌI GOOGLE API NỮA!
-            // Sử dụng hàm dịch tĩnh nội bộ trong LanguageManager để lấy câu nói ngay lập tức (0.001s)
-            string textToSpeak = LanguageManager.TranslatePoi(ten, moTa);
-
-            // Nạp danh sách giọng đọc nếu chưa có
-            if (_cachedLocales == null) _cachedLocales = await TextToSpeech.Default.GetLocalesAsync();
-
-            // Tìm đúng gói giọng đọc cho ngôn ngữ hiện tại
-            string targetShort = currentLang.Split('-')[0].ToLower(); // Lấy "de", "fr", "ru"...
-
-            var locale = _cachedLocales?.FirstOrDefault(l => l.Language.ToLower().Replace("_", "-") == currentLang.ToLower())
-                      ?? _cachedLocales?.FirstOrDefault(l => l.Language.ToLower().StartsWith(targetShort));
-
-            // Phát âm thanh lập tức
-            await TextToSpeech.Default.SpeakAsync(textToSpeak, new SpeechOptions
+            // Dừng âm thanh cũ nếu đang phát dở
+            if (_audioPlayer != null && _audioPlayer.IsPlaying)
             {
-                Locale = locale,
-                Pitch = 1.0f,
-                Volume = 1.0f
-            }, cancelToken: _ttsCts.Token);
+                _audioPlayer.Stop();
+                _audioPlayer.Dispose();
+            }
+
+            string currentLang = LanguageManager.CurrentLang;
+            string targetShort = currentLang.Split('-')[0].ToLower();
+
+            // Lấy nội dung cần đọc
+            string intro = LanguageManager.TranslatePoi(ten);
+            string moTaDich = await TranslationHelper.TranslateAsync(moTa, currentLang);
+            string textToSpeak = intro + moTaDich;
+
+            if (textToSpeak.Length > 200)
+            {
+                textToSpeak = textToSpeak.Substring(0, 195) + "...";
+            }
+
+            string url = $"https://translate.google.com/translate_tts?ie=UTF-8&q={Uri.EscapeDataString(textToSpeak)}&tl={targetShort}&client=tw-ob";
+
+            // 1. NGỤY TRANG YÊU CẦU THÀNH TRÌNH DUYỆT ĐỂ GOOGLE KHÔNG CHẶN
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
+
+            var response = await _httpClient.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // 2. TẢI FILE MP3 VÀO RAM (MemoryStream) TRƯỚC KHI PHÁT
+                var audioStream = await response.Content.ReadAsStreamAsync();
+                var memoryStream = new System.IO.MemoryStream();
+                await audioStream.CopyToAsync(memoryStream);
+
+                // Trả con trỏ về đầu file để bắt đầu phát
+                memoryStream.Position = 0;
+
+                // 3. Phát Audio từ RAM
+                _audioPlayer = AudioManager.Current.CreatePlayer(memoryStream);
+                _audioPlayer.Play();
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"Google TTS API Bị chặn: {response.StatusCode}");
+            }
         }
-        catch (OperationCanceledException) { }
-        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"TTS Error: {ex.Message}"); }
-        finally { _isSpeaking = false; }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Online TTS Error: {ex.Message}");
+        }
+        finally
+        {
+            _isSpeaking = false;
+        }
     }
 
     // --- CÁC HÀM XỬ LÝ DI CHUYỂN ---

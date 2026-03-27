@@ -16,6 +16,10 @@ public partial class CaiDatPage : ContentPage
 
     // --- Sự kiện click cho từng ngôn ngữ ---
     private async void OnVietnameseClicked(object sender, EventArgs e) => await ChangeLanguage("vi-VN");
+
+    // ĐÃ THÊM LẠI HÀM NÀY ĐỂ SỬA LỖI CHO NÚT TIẾNG ANH
+    private async void OnEnglishClicked(object sender, EventArgs e) => await ChangeLanguage("en-US");
+
     private async void OnGermanClicked(object sender, EventArgs e) => await ChangeLanguage("de-DE");
     private async void OnFrenchClicked(object sender, EventArgs e) => await ChangeLanguage("fr-FR");
     private async void OnRussianClicked(object sender, EventArgs e) => await ChangeLanguage("ru-RU");
@@ -28,8 +32,7 @@ public partial class CaiDatPage : ContentPage
         // Nếu đang ở ngôn ngữ này rồi thì không làm gì cả
         if (LanguageManager.CurrentLang == langCode) return;
 
-        // Lấy các chuỗi thông báo xác nhận từ từ điển (Translations) của ngôn ngữ sắp đổi sang
-        // Điều này giúp người dùng nước ngoài hiểu họ đang xác nhận cái gì
+        // Lấy các chuỗi thông báo xác nhận từ từ điển
         string title = LanguageManager.Translations[langCode]["ConfirmTitle"];
         string msg = LanguageManager.Translations[langCode]["ConfirmMsg"];
         string btnChange = LanguageManager.Translations[langCode]["Change"];
@@ -42,17 +45,16 @@ public partial class CaiDatPage : ContentPage
             LanguageManager.CurrentLang = langCode;
             UpdateUI();
 
-            // KÍCH HOẠT DỊCH TRƯỚC: Tải toàn bộ bản dịch các điểm POI về bộ nhớ đệm
+            // Tải trước bản dịch
             _ = TranslationHelper.PreLoadAllAsync(langCode);
 
-            // Gửi tin nhắn để toàn bộ app (bao gồm TabBar ở AppShell) cập nhật lại chữ
+            // Cập nhật lại UI toàn hệ thống
             WeakReferenceMessenger.Default.Send(new LanguageChangedMessage());
         }
     }
 
     private void UpdateUI()
     {
-        // Cập nhật lại toàn bộ nhãn trên trang Cài đặt theo ngôn ngữ mới
         lblPageTitle.Text = LanguageManager.Get("SettingTitle");
         lblFeature.Text = LanguageManager.Get("SettingFeature");
         lblTts.Text = LanguageManager.Get("SettingTts");

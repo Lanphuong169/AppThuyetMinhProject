@@ -33,6 +33,28 @@ namespace VinhKhanhTrip.Helpers
                 ["SettingGeofence"] = "📍 Hiển thị vùng Geofence",
                 ["SettingLanguage"] = "Ngôn ngữ"
             },
+            ["en-US"] = new()
+            {
+                ["Search"] = "Search for food...",
+                ["Arrive"] = "Arriving at",
+                ["TabMap"] = "Maps",
+                ["TabList"] = "List",
+                ["TabSettings"] = "Settings",
+                ["ConfirmTitle"] = "Confirm",
+                ["ConfirmMsg"] = "Are you sure you want to change to English?",
+                ["Yes"] = "Yes",
+                ["No"] = "No",
+                ["Change"] = "Change",
+                ["Cancel"] = "Cancel",
+                ["DetailDescription"] = "Description",
+                ["DetailSpecialDishes"] = "Specialty dishes",
+                ["BtnMap"] = "View Map",
+                ["SettingTitle"] = "SYSTEM SETTINGS",
+                ["SettingFeature"] = "Features",
+                ["SettingTts"] = "🔊 Auto Voice Guide",
+                ["SettingGeofence"] = "📍 Show Geofence Area",
+                ["SettingLanguage"] = "Language"
+            },
             ["de-DE"] = new()
             {
                 ["Search"] = "Essen suchen...",
@@ -169,17 +191,18 @@ namespace VinhKhanhTrip.Helpers
 
         public static string Get(string key) => Translations[CurrentLang].GetValueOrDefault(key, key);
 
-        public static string TranslatePoi(string ten, string moTaVi)
+        public static string TranslatePoi(string ten)
         {
             return CurrentLang switch
             {
-                "de-DE" => $"Sie nähern sich {ten}. Dies ist ein berühmter Ort auf der Vinh Khanh Straße.",
-                "fr-FR" => $"Vous approchez de {ten}. C'est un endroit célèbre de la rue Vinh Khanh.",
-                "ru-RU" => $"Вы приближаетесь к {ten}. Это известное место на улице Винь Кхань.",
-                "ja-JP" => $"{ten} に近づいています。ここはVinh Khanh通りの有名な場所です。",
-                "ko-KR" => $"{ten}에 접근하고 있습니다. 이곳은 빈칸 거리의 유명한 장소입니다.",
-                "zh-CN" => $"您正在靠近 {ten}。这是永庆街上的著名景点。",
-                _ => $"Bạn đang tiến vào khu vực {ten}. {moTaVi}"
+                "en-US" => $"You are approaching {ten}. ",
+                "de-DE" => $"Sie nähern sich {ten}. ",
+                "fr-FR" => $"Vous approchez de {ten}. ",
+                "ru-RU" => $"Вы приближаетесь к {ten}. ",
+                "ja-JP" => $"{ten} に近づいています。",
+                "ko-KR" => $"{ten}에 접근하고 있습니다. ",
+                "zh-CN" => $"您正在靠近 {ten}。",
+                _ => $"Bạn đang tiến vào khu vực {ten}. "
             };
         }
     }
