@@ -22,36 +22,112 @@ public partial class DanhSachPage : ContentPage
     {
         InitializeComponent();
 
-        // Gán dữ liệu ban đầu
         DanhSachCV.ItemsSource = DanhSachQuanAn.dsQuan;
 
-        // Đăng ký nhận tin đổi ngôn ngữ để cập nhật giao diện
+        // Lắng nghe sự kiện đổi ngôn ngữ
         WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, (r, m) =>
         {
-            MainThread.BeginInvokeOnMainThread(UpdateUI);
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                await UpdateUIStringsAsync();
+            });
         });
 
-        // Tải trước danh sách giọng đọc
         Task.Run(async () => _cachedLocales = await TextToSpeech.Default.GetLocalesAsync());
 
-        UpdateUI();
+        _ = UpdateUIStringsAsync();
     }
 
-    // Hàm cập nhật ngôn ngữ cho các Label tĩnh
-    private void UpdateUI()
+    private async Task UpdateUIStringsAsync()
     {
-        searchBar.Placeholder = LanguageManager.Get("Search");
-        LblAll.Text = LanguageManager.Get("TabAll") ?? "Tất cả";
-        // Bạn có thể thêm các Label khác vào LanguageManager để dịch ở đây
+        var currentLang = LanguageManager.CurrentLang ?? "vi-VN";
+
+        string tMonAn = "Món ăn:"; string tPhucVu = "Phục vụ:"; string tKhongGian = "Không gian:";
+        string tXemChiTiet = "Xem chi tiết"; string tThuyetMinh = "Thuyết minh";
+
+        if (currentLang.Contains("vi"))
+        {
+            searchBar.Placeholder = "Tìm kiếm nhà hàng..."; LblAll.Text = "Tất cả"; LblOc.Text = "Ốc & Hải sản"; LblLau.Text = "Lẩu & Nướng";
+        }
+        else if (currentLang.Contains("en"))
+        {
+            searchBar.Placeholder = "Search..."; LblAll.Text = "All"; LblOc.Text = "Seafood"; LblLau.Text = "Hotpot & BBQ";
+            tMonAn = "Food:"; tPhucVu = "Service:"; tKhongGian = "Ambiance:"; tXemChiTiet = "Details"; tThuyetMinh = "Listen";
+        }
+        else if (currentLang.Contains("de"))
+        {
+            searchBar.Placeholder = "Suchen..."; LblAll.Text = "Alle"; LblOc.Text = "Meeresfrüchte"; LblLau.Text = "Grill";
+            tMonAn = "Essen:"; tPhucVu = "Service:"; tKhongGian = "Ambiente:"; tXemChiTiet = "Details"; tThuyetMinh = "Hören";
+        }
+        else if (currentLang.Contains("fr"))
+        {
+            searchBar.Placeholder = "Chercher..."; LblAll.Text = "Tout"; LblOc.Text = "Fruits de mer"; LblLau.Text = "Fondue";
+            tMonAn = "Plats:"; tPhucVu = "Service:"; tKhongGian = "Ambiance:"; tXemChiTiet = "Détails"; tThuyetMinh = "Écouter";
+        }
+        else if (currentLang.Contains("es"))
+        {
+            searchBar.Placeholder = "Buscar..."; LblAll.Text = "Todo"; LblOc.Text = "Mariscos"; LblLau.Text = "Parrilla";
+            tMonAn = "Comida:"; tPhucVu = "Servicio:"; tKhongGian = "Ambiente:"; tXemChiTiet = "Detalles"; tThuyetMinh = "Escuchar";
+        }
+        else if (currentLang.Contains("ru"))
+        {
+            searchBar.Placeholder = "Поиск..."; LblAll.Text = "Все"; LblOc.Text = "Морепродукты"; LblLau.Text = "Барбекю";
+            tMonAn = "Еда:"; tPhucVu = "Сервис:"; tKhongGian = "Атмосфера:"; tXemChiTiet = "Детали"; tThuyetMinh = "Слушать";
+        }
+        else if (currentLang.Contains("zh"))
+        {
+            searchBar.Placeholder = "搜索..."; LblAll.Text = "全部"; LblOc.Text = "海鲜"; LblLau.Text = "火锅烧烤";
+            tMonAn = "菜品:"; tPhucVu = "服务:"; tKhongGian = "环境:"; tXemChiTiet = "详情"; tThuyetMinh = "语音";
+        }
+        else if (currentLang.Contains("ja"))
+        {
+            searchBar.Placeholder = "検索..."; LblAll.Text = "すべて"; LblOc.Text = "シーフード"; LblLau.Text = "鍋＆BBQ";
+            tMonAn = "料理:"; tPhucVu = "サービス:"; tKhongGian = "雰囲気:"; tXemChiTiet = "詳細"; tThuyetMinh = "音声";
+        }
+        else if (currentLang.Contains("ko"))
+        {
+            searchBar.Placeholder = "검색..."; LblAll.Text = "모두"; LblOc.Text = "해산물"; LblLau.Text = "전골&BBQ";
+            tMonAn = "음식:"; tPhucVu = "서비스:"; tKhongGian = "분위기:"; tXemChiTiet = "상세 정보"; tThuyetMinh = "듣기";
+        }
+
+        // 1. Gán text cứng cho CollectionView và báo load Mô tả
+        foreach (var q in DanhSachQuanAn.dsQuan)
+        {
+            q.LblMonAn = tMonAn;
+            q.LblPhucVu = tPhucVu;
+            q.LblKhongGian = tKhongGian;
+            q.BtnXemChiTiet = tXemChiTiet;
+            q.BtnThuyetMinh = tThuyetMinh;
+
+            q.MoTaHienThi = currentLang.Contains("vi") ? q.MoTa : "...";
+        }
+
+        RefreshList(); // Ép UI vẽ lại các text vừa đổi
+
+        // 2. Dịch Mô tả ngầm định
+        if (!currentLang.Contains("vi"))
+        {
+            foreach (var q in DanhSachQuanAn.dsQuan)
+            {
+                try { q.MoTaHienThi = await TranslationHelper.TranslateAsync(q.MoTa, currentLang); }
+                catch { q.MoTaHienThi = q.MoTa; } // Lỗi thì trả về gốc
+            }
+            RefreshList(); // Ép UI vẽ lại text sau khi đã dịch xong
+        }
     }
 
-    // Xử lý Tìm kiếm
+    private void RefreshList()
+    {
+        // Gán Null rồi gán lại để CollectionView bắt buộc phải vẽ lại các Bindings
+        DanhSachCV.ItemsSource = null;
+        FilterData(searchBar.Text, _currentCategory);
+    }
+
     private void OnSearchTextChanged(object sender, TextChangedEventArgs e)
     {
         FilterData(e.NewTextValue, _currentCategory);
     }
 
-    // Xử lý Lọc theo Category
     private void OnCategoryTapped(object sender, EventArgs e)
     {
         var border = sender as Border;
@@ -62,7 +138,6 @@ public partial class DanhSachPage : ContentPage
         if (category == null) return;
         _currentCategory = category;
 
-        // Đổi màu nút để người dùng biết đang chọn
         ResetCategoryColors();
         if (border != null)
         {
@@ -96,7 +171,6 @@ public partial class DanhSachPage : ContentPage
         DanhSachCV.ItemsSource = filtered.ToList();
     }
 
-    // Chuyển sang trang chi tiết
     private async void OnItemSelected(object sender, SelectionChangedEventArgs e)
     {
         if (e.CurrentSelection.FirstOrDefault() is QuanAn selected)
@@ -114,7 +188,6 @@ public partial class DanhSachPage : ContentPage
         }
     }
 
-    // HÀM QUAN TRỌNG: Thuyết minh có tự động dịch
     private async void OnSpeakerButtonClicked(object sender, EventArgs e)
     {
         if (sender is Button btn && btn.CommandParameter is QuanAn q)
@@ -124,16 +197,13 @@ public partial class DanhSachPage : ContentPage
                 if (_ttsCts != null) { _ttsCts.Cancel(); _ttsCts.Dispose(); }
                 _ttsCts = new CancellationTokenSource();
 
-                // 1. Dùng hàm để Translate từ tiếng Việt gốc sang ngôn ngữ đang chọn
                 string cauGoc = $"{q.Ten}. {q.MoTa}";
                 string textToSpeak = await TranslationHelper.TranslateAsync(cauGoc, LanguageManager.CurrentLang);
 
-                // 2. Tìm giọng đọc chuẩn
                 if (_cachedLocales == null) _cachedLocales = await TextToSpeech.Default.GetLocalesAsync();
                 string targetTag = LanguageManager.CurrentLang.Split('-')[0].ToLower();
                 var locale = _cachedLocales?.FirstOrDefault(l => l.Language.ToLower().StartsWith(targetTag));
 
-                // 3. Phát âm thanh ngay lập tức
                 await TextToSpeech.Default.SpeakAsync(textToSpeak, new SpeechOptions { Locale = locale }, cancelToken: _ttsCts.Token);
             }
             catch (Exception ex)

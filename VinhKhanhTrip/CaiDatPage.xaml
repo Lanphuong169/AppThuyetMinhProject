@@ -11,16 +11,24 @@
             <Label x:Name="lblPageTitle" Text="CÀI ĐẶT HỆ THỐNG" TextColor="#C99446" FontAttributes="Bold" FontSize="14" CharacterSpacing="2" HorizontalOptions="Center" Margin="0,20,0,10"/>
 
             <Label x:Name="lblFeature" Text="Tính năng" FontAttributes="Bold" FontSize="16" TextColor="#E2C792"/>
+
             <Border BackgroundColor="#1A1A1A" Stroke="#C99446" StrokeThickness="0.5" StrokeShape="RoundRectangle 15" Padding="15">
-                <VerticalStackLayout Spacing="15">
+                <VerticalStackLayout Spacing="10">
                     <Grid ColumnDefinitions="*, Auto">
-                        <Label x:Name="lblTts" Text="🔊 Thuyết minh tự động" TextColor="White" VerticalOptions="Center"/>
-                        <Switch Grid.Column="1" IsToggled="True" ThumbColor="#C99446" OnColor="#33C99446"/>
+                        <Label x:Name="lblSpeedTitle" Text="⏱ Tốc độ thuyết minh" TextColor="White" VerticalOptions="Center" FontSize="15" Grid.Column="0"/>
+                        <Label x:Name="lblCurrentSpeed" Text="Chuẩn" TextColor="#C99446" FontAttributes="Bold" VerticalOptions="Center" Grid.Column="1"/>
                     </Grid>
-                    <BoxView HeightRequest="0.5" Color="#33C99446"/>
-                    <Grid ColumnDefinitions="*, Auto">
-                        <Label x:Name="lblGeofence" Text="📍 Hiển thị vùng Geofence" TextColor="White" VerticalOptions="Center"/>
-                        <Switch Grid.Column="1" IsToggled="True" ThumbColor="#C99446" OnColor="#33C99446"/>
+
+                    <Slider x:Name="SpeedSlider" Minimum="0" Maximum="4" Value="2" 
+                            MinimumTrackColor="#C99446" MaximumTrackColor="#33C99446" ThumbColor="#E2C792"
+                            ValueChanged="OnSpeedSliderValueChanged"/>
+
+                    <Grid ColumnDefinitions="*, *, *, *, *">
+                        <Label Grid.Column="0" Text="-2x" TextColor="Gray" FontSize="12" HorizontalOptions="Start"/>
+                        <Label Grid.Column="1" Text="-1.5x" TextColor="Gray" FontSize="12" HorizontalOptions="Center"/>
+                        <Label Grid.Column="2" Text="0" TextColor="#C99446" FontSize="12" HorizontalOptions="Center" FontAttributes="Bold"/>
+                        <Label Grid.Column="3" Text="1.5x" TextColor="Gray" FontSize="12" HorizontalOptions="Center"/>
+                        <Label Grid.Column="4" Text="2x" TextColor="Gray" FontSize="12" HorizontalOptions="End"/>
                     </Grid>
                 </VerticalStackLayout>
             </Border>
@@ -29,13 +37,6 @@
 
             <Border BackgroundColor="#1A1A1A" Stroke="#C99446" StrokeThickness="0.5" StrokeShape="RoundRectangle 15" Padding="0,10">
                 <VerticalStackLayout>
-
-                    <Grid HeightRequest="45">
-                        <Label Text="🇻🇳 Tiếng Việt" TextColor="White" HorizontalOptions="Start" VerticalOptions="Center" Margin="20,0,0,0" FontSize="15"/>
-                        <Button BackgroundColor="Transparent" Clicked="OnVietnameseClicked" CornerRadius="0"/>
-                    </Grid>
-                    <BoxView HeightRequest="0.5" Color="#33C99446" Margin="15,0"/>
-
                     <Grid HeightRequest="45">
                         <Label Text="🇬🇧 English" TextColor="White" HorizontalOptions="Start" VerticalOptions="Center" Margin="20,0,0,0" FontSize="15"/>
                         <Button BackgroundColor="Transparent" Clicked="OnEnglishClicked" CornerRadius="0"/>
@@ -43,38 +44,50 @@
                     <BoxView HeightRequest="0.5" Color="#33C99446" Margin="15,0"/>
 
                     <Grid HeightRequest="45">
-                        <Label Text="🇩🇪 Deutsch" TextColor="White" HorizontalOptions="Start" VerticalOptions="Center" Margin="20,0,0,0" FontSize="15"/>
+                        <Label Text="🇻🇳 Vietnamese" TextColor="White" HorizontalOptions="Start" VerticalOptions="Center" Margin="20,0,0,0" FontSize="15"/>
+                        <Button BackgroundColor="Transparent" Clicked="OnVietnameseClicked" CornerRadius="0"/>
+                    </Grid>
+                    <BoxView HeightRequest="0.5" Color="#33C99446" Margin="15,0"/>
+
+                    <Grid HeightRequest="45">
+                        <Label Text="🇩🇪 German" TextColor="White" HorizontalOptions="Start" VerticalOptions="Center" Margin="20,0,0,0" FontSize="15"/>
                         <Button BackgroundColor="Transparent" Clicked="OnGermanClicked" CornerRadius="0"/>
                     </Grid>
                     <BoxView HeightRequest="0.5" Color="#33C99446" Margin="15,0"/>
 
                     <Grid HeightRequest="45">
-                        <Label Text="🇫🇷 Français" TextColor="White" HorizontalOptions="Start" VerticalOptions="Center" Margin="20,0,0,0" FontSize="15"/>
+                        <Label Text="🇫🇷 French" TextColor="White" HorizontalOptions="Start" VerticalOptions="Center" Margin="20,0,0,0" FontSize="15"/>
                         <Button BackgroundColor="Transparent" Clicked="OnFrenchClicked" CornerRadius="0"/>
                     </Grid>
                     <BoxView HeightRequest="0.5" Color="#33C99446" Margin="15,0"/>
 
                     <Grid HeightRequest="45">
-                        <Label Text="🇷🇺 Русский" TextColor="White" HorizontalOptions="Start" VerticalOptions="Center" Margin="20,0,0,0" FontSize="15"/>
+                        <Label Text="🇷🇺 Russian" TextColor="White" HorizontalOptions="Start" VerticalOptions="Center" Margin="20,0,0,0" FontSize="15"/>
                         <Button BackgroundColor="Transparent" Clicked="OnRussianClicked" CornerRadius="0"/>
                     </Grid>
                     <BoxView HeightRequest="0.5" Color="#33C99446" Margin="15,0"/>
 
                     <Grid HeightRequest="45">
-                        <Label Text="🇯🇵 日本語" TextColor="White" HorizontalOptions="Start" VerticalOptions="Center" Margin="20,0,0,0" FontSize="15"/>
+                        <Label Text="🇪🇸 Spanish" TextColor="White" HorizontalOptions="Start" VerticalOptions="Center" Margin="20,0,0,0" FontSize="15"/>
+                        <Button BackgroundColor="Transparent" Clicked="OnSpanishClicked" CornerRadius="0"/>
+                    </Grid>
+                    <BoxView HeightRequest="0.5" Color="#33C99446" Margin="15,0"/>
+
+                    <Grid HeightRequest="45">
+                        <Label Text="🇨🇳 Chinese" TextColor="White" HorizontalOptions="Start" VerticalOptions="Center" Margin="20,0,0,0" FontSize="15"/>
+                        <Button BackgroundColor="Transparent" Clicked="OnChineseClicked" CornerRadius="0"/>
+                    </Grid>
+                    <BoxView HeightRequest="0.5" Color="#33C99446" Margin="15,0"/>
+
+                    <Grid HeightRequest="45">
+                        <Label Text="🇯🇵 Japanese" TextColor="White" HorizontalOptions="Start" VerticalOptions="Center" Margin="20,0,0,0" FontSize="15"/>
                         <Button BackgroundColor="Transparent" Clicked="OnJapaneseClicked" CornerRadius="0"/>
                     </Grid>
                     <BoxView HeightRequest="0.5" Color="#33C99446" Margin="15,0"/>
 
                     <Grid HeightRequest="45">
-                        <Label Text="🇰🇷 한국어" TextColor="White" HorizontalOptions="Start" VerticalOptions="Center" Margin="20,0,0,0" FontSize="15"/>
+                        <Label Text="🇰🇷 Korean" TextColor="White" HorizontalOptions="Start" VerticalOptions="Center" Margin="20,0,0,0" FontSize="15"/>
                         <Button BackgroundColor="Transparent" Clicked="OnKoreanClicked" CornerRadius="0"/>
-                    </Grid>
-                    <BoxView HeightRequest="0.5" Color="#33C99446" Margin="15,0"/>
-
-                    <Grid HeightRequest="45">
-                        <Label Text="🇨🇳 中文" TextColor="White" HorizontalOptions="Start" VerticalOptions="Center" Margin="20,0,0,0" FontSize="15"/>
-                        <Button BackgroundColor="Transparent" Clicked="OnChineseClicked" CornerRadius="0"/>
                     </Grid>
 
                 </VerticalStackLayout>

@@ -31,7 +31,8 @@ namespace VinhKhanhTrip.Helpers
                 ["SettingFeature"] = "Tính năng",
                 ["SettingTts"] = "🔊 Thuyết minh tự động",
                 ["SettingGeofence"] = "📍 Hiển thị vùng Geofence",
-                ["SettingLanguage"] = "Ngôn ngữ"
+                ["SettingLanguage"] = "Ngôn ngữ",
+                ["SettingSpeedTitle"] = "Tốc độ thuyết minh" // <--- THÊM MỚI
             },
             ["en-US"] = new()
             {
@@ -53,7 +54,8 @@ namespace VinhKhanhTrip.Helpers
                 ["SettingFeature"] = "Features",
                 ["SettingTts"] = "🔊 Auto Voice Guide",
                 ["SettingGeofence"] = "📍 Show Geofence Area",
-                ["SettingLanguage"] = "Language"
+                ["SettingLanguage"] = "Language",
+                ["SettingSpeedTitle"] = "Narration speed" // <--- THÊM MỚI
             },
             ["de-DE"] = new()
             {
@@ -75,7 +77,8 @@ namespace VinhKhanhTrip.Helpers
                 ["SettingFeature"] = "Funktionen",
                 ["SettingTts"] = "🔊 Automatische Ansage",
                 ["SettingGeofence"] = "📍 Geofence-Bereich anzeigen",
-                ["SettingLanguage"] = "Sprache"
+                ["SettingLanguage"] = "Sprache",
+                ["SettingSpeedTitle"] = "Sprechgeschwindigkeit" // <--- THÊM MỚI
             },
             ["fr-FR"] = new()
             {
@@ -97,7 +100,8 @@ namespace VinhKhanhTrip.Helpers
                 ["SettingFeature"] = "Fonctions",
                 ["SettingTts"] = "🔊 Guide vocal auto",
                 ["SettingGeofence"] = "📍 Afficher la zone Geofence",
-                ["SettingLanguage"] = "Langue"
+                ["SettingLanguage"] = "Langue",
+                ["SettingSpeedTitle"] = "Vitesse de narration" // <--- THÊM MỚI
             },
             ["ru-RU"] = new()
             {
@@ -119,7 +123,8 @@ namespace VinhKhanhTrip.Helpers
                 ["SettingFeature"] = "Функции",
                 ["SettingTts"] = "🔊 Автогид",
                 ["SettingGeofence"] = "📍 Показать геозону",
-                ["SettingLanguage"] = "Язык"
+                ["SettingLanguage"] = "Язык",
+                ["SettingSpeedTitle"] = "Скорость озвучки" // <--- THÊM MỚI
             },
             ["ja-JP"] = new()
             {
@@ -141,7 +146,8 @@ namespace VinhKhanhTrip.Helpers
                 ["SettingFeature"] = "機能",
                 ["SettingTts"] = "🔊 自動音声ガイド",
                 ["SettingGeofence"] = "📍 ジオフェンスエリアを表示",
-                ["SettingLanguage"] = "言語"
+                ["SettingLanguage"] = "言語",
+                ["SettingSpeedTitle"] = "ナレーション速度" // <--- THÊM MỚI
             },
             ["ko-KR"] = new()
             {
@@ -163,7 +169,8 @@ namespace VinhKhanhTrip.Helpers
                 ["SettingFeature"] = "기능",
                 ["SettingTts"] = "🔊 자동 음성 안내",
                 ["SettingGeofence"] = "📍 지오펜스 영역 표시",
-                ["SettingLanguage"] = "언어"
+                ["SettingLanguage"] = "언어",
+                ["SettingSpeedTitle"] = "내레이션 속도" // <--- THÊM MỚI
             },
             ["zh-CN"] = new()
             {
@@ -185,11 +192,36 @@ namespace VinhKhanhTrip.Helpers
                 ["SettingFeature"] = "功能",
                 ["SettingTts"] = "🔊 自动语音导览",
                 ["SettingGeofence"] = "📍 显示地理围栏区域",
-                ["SettingLanguage"] = "语言"
+                ["SettingLanguage"] = "语言",
+                ["SettingSpeedTitle"] = "解说速度" // <--- THÊM MỚI
+            },
+            // Bổ sung tiếng Tây Ban Nha vì bị thiếu trong file gốc của bạn
+            ["es-ES"] = new()
+            {
+                ["Search"] = "Buscar comida...",
+                ["Arrive"] = "Llegando a",
+                ["TabMap"] = "Mapa",
+                ["TabList"] = "Lista",
+                ["TabSettings"] = "Ajustes",
+                ["ConfirmTitle"] = "Confirmar",
+                ["ConfirmMsg"] = "¿Estás seguro de que quieres cambiar a español?",
+                ["Yes"] = "Sí",
+                ["No"] = "No",
+                ["Change"] = "Cambiar",
+                ["Cancel"] = "Cancelar",
+                ["DetailDescription"] = "Descripción",
+                ["DetailSpecialDishes"] = "Especialidades",
+                ["BtnMap"] = "Ver Mapa",
+                ["SettingTitle"] = "AJUSTES DEL SISTEMA",
+                ["SettingFeature"] = "Funciones",
+                ["SettingTts"] = "🔊 Guía de voz automática",
+                ["SettingGeofence"] = "📍 Mostrar área Geofence",
+                ["SettingLanguage"] = "Idioma",
+                ["SettingSpeedTitle"] = "Velocidad de narración" // <--- THÊM MỚI
             }
         };
 
-        public static string Get(string key) => Translations[CurrentLang].GetValueOrDefault(key, key);
+        public static string Get(string key) => Translations.ContainsKey(CurrentLang) ? Translations[CurrentLang].GetValueOrDefault(key, key) : key;
 
         public static string TranslatePoi(string ten)
         {
@@ -202,6 +234,7 @@ namespace VinhKhanhTrip.Helpers
                 "ja-JP" => $"{ten} に近づいています。",
                 "ko-KR" => $"{ten}에 접근하고 있습니다. ",
                 "zh-CN" => $"您正在靠近 {ten}。",
+                "es-ES" => $"Te estás acercando a {ten}. ",
                 _ => $"Bạn đang tiến vào khu vực {ten}. "
             };
         }
