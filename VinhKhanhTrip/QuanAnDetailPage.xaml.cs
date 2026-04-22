@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -97,26 +97,31 @@ public partial class QuanAnDetailPage : ContentPage
             btnViewMap.Text = "지도 보기";
         }
 
-        // 2. Tự động dịch phần Mô Tả (Giới Thiệu) của quán ăn
+        // 2. Sử dụng bản dịch từ phần Translations (nếu có)
         if (!string.IsNullOrEmpty(_poi.MoTa))
         {
-            if (currentLang.Contains("vi"))
+            string shortLang = currentLang.Split('-')[0].ToLower(); // vi, en, de...
+            
+            if (shortLang == "vi")
             {
-                lblMoTa.Text = _poi.MoTa; // Giữ nguyên tiếng Việt gốc
+                lblMoTa.Text = _poi.MoTa;
+            }
+            else if (_poi.Translations != null && _poi.Translations.ContainsKey(shortLang) && !string.IsNullOrEmpty(_poi.Translations[shortLang]))
+            {
+                // Nếu đã có bản dịch chuẩn từ Admin Panel, dùng luôn
+                lblMoTa.Text = _poi.Translations[shortLang];
             }
             else
             {
-                // Hiển thị trạng thái đang dịch để người dùng biết
+                // Fallback: Tự động dịch nếu chưa có bản dịch trong DB
                 lblMoTa.Text = "...";
                 try
                 {
-                    // Dùng Helper dịch nội dung sang ngôn ngữ hiện tại
                     string translatedText = await TranslationHelper.TranslateAsync(_poi.MoTa, currentLang);
                     lblMoTa.Text = translatedText;
                 }
                 catch
                 {
-                    // Nếu lỗi mạng hoặc lỗi API dịch thì fallback về tiếng Việt
                     lblMoTa.Text = _poi.MoTa;
                 }
             }
@@ -154,12 +159,30 @@ public partial class QuanAnDetailPage : ContentPage
             if (_ttsCts != null) { _ttsCts.Cancel(); _ttsCts.Dispose(); }
             _ttsCts = new CancellationTokenSource();
 
-            string cauGoc = $"{_poi.Ten}. {_poi.MoTa}";
-            string textToSpeak = await TranslationHelper.TranslateAsync(cauGoc, LanguageManager.CurrentLang);
+            string currentLang = LanguageManager.CurrentLang ?? "vi-VN";
+            string shortLang = currentLang.Split('-')[0].ToLower();
+            string textToSpeak = "";
+
+            // Ưu tiên đọc từ bản dịch đã lưu
+            if (shortLang == "vi") 
+            {
+                textToSpeak = $"{_poi.Ten}. {_poi.MoTa}";
+            }
+            else if (_poi.Translations != null && _poi.Translations.ContainsKey(shortLang) && !string.IsNullOrEmpty(_poi.Translations[shortLang]))
+            {
+                // Dịch nốt tên quán (thường ngắn) và gộp với bản dịch mô tả đã có
+                string translatedName = await TranslationHelper.TranslateAsync(_poi.Ten, currentLang);
+                textToSpeak = $"{translatedName}. {_poi.Translations[shortLang]}";
+            }
+            else 
+            {
+                // Fallback cũ: Dịch toàn bộ on-the-fly
+                string cauGoc = $"{_poi.Ten}. {_poi.MoTa}";
+                textToSpeak = await TranslationHelper.TranslateAsync(cauGoc, currentLang);
+            }
 
             if (_cachedLocales == null) _cachedLocales = await TextToSpeech.Default.GetLocalesAsync();
-            string targetTag = LanguageManager.CurrentLang.Split('-')[0].ToLower();
-            var locale = _cachedLocales?.FirstOrDefault(l => l.Language.ToLower().StartsWith(targetTag));
+            var locale = _cachedLocales?.FirstOrDefault(l => l.Language.ToLower().StartsWith(shortLang));
 
             await TextToSpeech.Default.SpeakAsync(textToSpeak, new SpeechOptions { Locale = locale }, cancelToken: _ttsCts.Token);
         }

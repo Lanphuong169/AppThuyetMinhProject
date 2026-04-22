@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.Controls.Maps;
+using Microsoft.Maui.Controls.Maps;
 using System.Collections.Generic;
 
 namespace VinhKhanhTrip.Models
@@ -38,6 +38,8 @@ namespace VinhKhanhTrip.Models
         public string LblKhongGian { get; set; } = "Không gian:";
         public string BtnXemChiTiet { get; set; } = "Xem chi tiết";
         public string BtnThuyetMinh { get; set; } = "Thuyết minh";
+
+        public Dictionary<string, string> Translations { get; set; } = new Dictionary<string, string>();
 
         private string _moTaHienThi = "";
         public string MoTaHienThi

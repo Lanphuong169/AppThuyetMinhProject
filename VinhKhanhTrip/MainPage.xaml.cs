@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -9,10 +9,12 @@ using Microsoft.Maui.Maps;
 using VinhKhanhTrip.Models;
 using VinhKhanhTrip.Data;
 using VinhKhanhTrip.Helpers;
+using VinhKhanhTrip.Services;
 using CommunityToolkit.Mvvm.Messaging;
 using Plugin.Maui.Audio;
 using System.Net.Http;
 using Microsoft.Maui.Storage;
+using System.Threading;
 
 namespace VinhKhanhTrip;
 
@@ -32,11 +34,29 @@ public partial class MainPage : ContentPage
     private HashSet<string> _trangThaiTrongVung = new HashSet<string>();
     private bool _isSpeaking = false;
 
+    // Quản lý mapping giữa Dữ liệu và Ghim để Highlight
+    private Dictionary<QuanAn, Pin> _pinMap = new Dictionary<QuanAn, Pin>();
+    private string? _manuallySelectedPoiName = null;
+    private CancellationTokenSource? _blinkCts;
+    private readonly SemaphoreSlim _geoLock = new SemaphoreSlim(1, 1);
+
     public MainPage()
     {
         InitializeComponent();
         SetupMap();
         UpdateUIStrings();
+
+        // Đợi dữ liệu tải xong thì vẽ lại map
+        Task.Run(async () =>
+        {
+            while (!DanhSachQuanAn.IsLoaded) {
+                await Task.Delay(1000);
+            }
+            MainThread.BeginInvokeOnMainThread(() => SetupMap());
+        });
+
+        // Lắng nghe khi Firebase có dữ liệu mới (quán mới được thêm từ Admin)
+        DanhSachQuanAn.DataLoaded += OnDataReloaded;
 
         WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, (r, m) =>
         {
@@ -47,9 +67,39 @@ public partial class MainPage : ContentPage
         });
     }
 
+    private void OnDataReloaded(object? sender, EventArgs e)
+    {
+        // Vẽ lại toàn bộ ghim trên bản đồ khi dữ liệu Firebase thay đổi (thêm/xóa quán)
+        MainThread.BeginInvokeOnMainThread(() => SetupMap());
+    }
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        // Nạp dữ liệu ngay khi hiện trang
+        await DanhSachQuanAn.LoadDataAsync();
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+    }
+
+    // Hủy đăng ký sự kiện khi trang bị hủy để tránh memory leak
+    ~MainPage()
+    {
+        DanhSachQuanAn.DataLoaded -= OnDataReloaded;
+    }
+
     private void SetupMap()
     {
         if (map == null) return;
+        _pinMap.Clear();
+
+        // Xóa các phần tử cũ trước khi vẽ lại để tránh trùng lặp
+        map.Pins.Clear();
+        map.MapElements.Clear();
+
         fakeBlueDot.Center = vitriFake;
         fakeBlueDot.Radius = Distance.FromMeters(6);
         fakeBlueDot.FillColor = Color.FromArgb("#4285F4");
@@ -57,8 +107,12 @@ public partial class MainPage : ContentPage
         fakeBlueDot.StrokeWidth = 3;
         map.MapElements.Add(fakeBlueDot);
 
-        foreach (var quan in DanhSachQuanAn.dsQuan)
+        foreach (var quan in DanhSachQuanAn.dsQuan.ToList())
         {
+            // Kiểm tra tọa độ hợp lệ để tránh crash ứng dụng (Lat: -90 đến 90, Lng: -180 đến 180)
+            if (quan.Lat < -90 || quan.Lat > 90 || quan.Lng < -180 || quan.Lng > 180)
+                continue;
+
             var pin = new Pin { Label = $"🍴 {quan.Ten}", Location = new Location(quan.Lat, quan.Lng) };
 
             // 1. Sự kiện khi ấn vào cái bảng tên của ghim
@@ -75,6 +129,7 @@ public partial class MainPage : ContentPage
             };
 
             map.Pins.Add(pin);
+            _pinMap[quan] = pin;
 
             quan.GeofenceCircle = new Circle
             {
@@ -88,6 +143,9 @@ public partial class MainPage : ContentPage
         }
         for (int i = 0; i < 6; i++) { _guideLines[i] = new Polyline { StrokeWidth = 5, StrokeColor = Colors.Transparent }; map.MapElements.Add(_guideLines[i]); }
         map.MoveToRegion(MapSpan.FromCenterAndRadius(vitriFake, Distance.FromMeters(150)));
+        
+        // QUAN TRỌNG: Gọi ngay lệnh kiểm tra để hiện màu Vàng quán gần nhất ngay khi vẽ map xong
+        _ = KiemTraGeofenceVaTTS(vitriFake);
     }
 
     // --- HIỂN THỊ / ẨN OVERLAY NGÔN NGỮ ---
@@ -233,6 +291,28 @@ public partial class MainPage : ContentPage
     }
 
     // --- CÁC HÀM XỬ LÝ DI CHUYỂN ---
+    private void ResetSearchHighlight()
+    {
+        string? oldName = _manuallySelectedPoiName;
+        _manuallySelectedPoiName = null;
+        _blinkCts?.Cancel();
+        _blinkCts = null;
+
+        // Xóa màu Xanh ngay lập tức trên Main Thread để không đè lên màu Vàng sắp vẽ
+        if (!string.IsNullOrEmpty(oldName))
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                var poi = DanhSachQuanAn.dsQuan.ToList().FirstOrDefault(q => q.Ten == oldName);
+                if (poi?.GeofenceCircle != null)
+                {
+                    poi.GeofenceCircle.StrokeColor = Colors.Transparent;
+                    poi.GeofenceCircle.FillColor = Colors.Transparent;
+                }
+            });
+        }
+    }
+
     void XuLyDiChuyen()
     {
         fakeBlueDot.Center = new Location(vitriFake.Latitude, vitriFake.Longitude);
@@ -242,90 +322,109 @@ public partial class MainPage : ContentPage
 
     async Task KiemTraGeofenceVaTTS(Location currentLocation)
     {
-        QuanAn? priorityPoi = null;
-        double minDist = double.MaxValue;
+        // Sử dụng Semaphore để đảm bảo ổn định đa luồng
+        if (!await _geoLock.WaitAsync(0)) return; 
 
-        // BƯỚC 1: Tìm quán ăn gần nhất (trong phạm vi 30m) để làm priorityPoi
-        foreach (var q in DanhSachQuanAn.dsQuan)
+        try
         {
-            double dist = DistanceHelper.GetDistance(currentLocation, new Location(q.Lat, q.Lng)) * 1000;
-            if (dist <= 30)
-            {
-                if (dist < minDist)
-                {
-                    minDist = dist;
-                    priorityPoi = q;
-                }
-            }
-            else
-            {
-                _trangThaiTrongVung.Remove(q.Ten);
-            }
-        }
+            QuanAn? priorityPoi = null; 
+            double minDist = double.MaxValue;
 
-        // BƯỚC 2: Cập nhật màu sắc cho các vòng tròn (GeofenceCircle)
-        foreach (var q in DanhSachQuanAn.dsQuan)
-        {
-            double dist = DistanceHelper.GetDistance(currentLocation, new Location(q.Lat, q.Lng)) * 1000;
+            var snapshot = DanhSachQuanAn.dsQuan.ToList();
 
-            if (q.GeofenceCircle != null)
+            // BƯỚC 1: Tìm quán ăn gần nhất trong phạm vi 30m
+            foreach (var q in snapshot)
             {
-                if (priorityPoi != null && q.Ten == priorityPoi.Ten)
+                if (q.Lat < -90 || q.Lat > 90 || q.Lng < -180 || q.Lng > 180) continue;
+
+                double dist = DistanceHelper.GetDistance(currentLocation, new Location(q.Lat, q.Lng)) * 1000;
+                
+                if (dist <= 30)
                 {
-                    // Quán đang được chọn/thuyết minh -> VÀNG DẠ QUANG rực rỡ
-                    q.GeofenceCircle.StrokeColor = Color.FromArgb("#FFFF00");
-                    q.GeofenceCircle.StrokeWidth = 8; // Viền dày gấp đôi để nổi bật
-                    q.GeofenceCircle.FillColor = Color.FromArgb("#FFFF00").WithAlpha(0.5f);
-                }
-                else if (dist <= 30)
-                {
-                    // Các quán lân cận trong bán kính 30m -> ĐỎ
-                    q.GeofenceCircle.StrokeColor = Colors.Red;
-                    q.GeofenceCircle.StrokeWidth = 4; // Viền bình thường
-                    q.GeofenceCircle.FillColor = Colors.Red.WithAlpha(0.2f);
+                    if (dist < minDist)
+                    {
+                        minDist = dist;
+                        priorityPoi = q;
+                    }
                 }
                 else
                 {
-                    // Ngoài vùng -> Trong suốt (ẩn đi)
+                    _trangThaiTrongVung.Remove(q.Ten);
+                }
+            }
+
+            // BƯỚC 2: Cập nhật màu sắc (Ưu tiên Xanh tìm kiếm > Vàng đang đứng > Đỏ lân cận)
+            foreach (var q in snapshot)
+            {
+                if (q.GeofenceCircle == null) continue;
+
+                double dist = DistanceHelper.GetDistance(currentLocation, new Location(q.Lat, q.Lng)) * 1000;
+
+                // 1. Quán đang được tìm kiếm (Do luồng nháy quản lý)
+                if (_manuallySelectedPoiName != null && string.Equals(q.Ten, _manuallySelectedPoiName, StringComparison.Ordinal))
+                {
+                    continue; 
+                }
+
+                // 2. Quán ĐANG ĐỨNG (Gần nhất trong 30m) -> HIỆN VÀNG RỰC
+                if (priorityPoi != null && q.Ten == priorityPoi.Ten)
+                {
+                    q.GeofenceCircle.StrokeColor = Color.FromArgb("#FFFF00");
+                    q.GeofenceCircle.StrokeWidth = 10;
+                    q.GeofenceCircle.FillColor = Color.FromArgb("#FFFF00").WithAlpha(0.6f);
+                }
+                // 3. Quán lân cận trong 30m -> HIỆN ĐỎ
+                else if (dist <= 30)
+                {
+                    q.GeofenceCircle.StrokeColor = Colors.Red;
+                    q.GeofenceCircle.StrokeWidth = 4;
+                    q.GeofenceCircle.FillColor = Colors.Red.WithAlpha(0.2f);
+                }
+                // 4. Còn lại -> TRONG SUỐT
+                else
+                {
                     q.GeofenceCircle.StrokeColor = Colors.Transparent;
                     q.GeofenceCircle.FillColor = Colors.Transparent;
                 }
             }
-        }
 
-        // BƯỚC 3: Xử lý UI và phát âm thanh TTS cho priorityPoi
-        if (priorityPoi != null)
-        {
-            VeVachDut(currentLocation, priorityPoi);
-            DistIndicator.IsVisible = true;
-            lblDistance.Text = $"{(int)minDist} m";
-            lblTargetName.Text = LanguageManager.Get("Arrive") + ": " + priorityPoi.Ten;
-
-            if (!_trangThaiTrongVung.Contains(priorityPoi.Ten) && !_isSpeaking)
+            // BƯỚC 3: Xử lý TTS cho quán trong phạm vi 30m
+            if (priorityPoi != null)
             {
-                _trangThaiTrongVung.Add(priorityPoi.Ten);
-                await PhatAmThanh(priorityPoi.Ten, priorityPoi.MoTa);
+                VeVachDut(currentLocation, priorityPoi);
+                DistIndicator.IsVisible = true;
+                lblDistance.Text = $"{(int)minDist} m";
+                lblTargetName.Text = LanguageManager.Get("Arrive") + ": " + priorityPoi.Ten;
+
+                if (!_trangThaiTrongVung.Contains(priorityPoi.Ten) && !_isSpeaking)
+                {
+                    _trangThaiTrongVung.Add(priorityPoi.Ten);
+                    await PhatAmThanh(priorityPoi.Ten, priorityPoi.MoTa);
+                }
+            }
+            else
+            {
+                foreach (var g in _guideLines) g.StrokeColor = Colors.Transparent;
+                DistIndicator.IsVisible = false;
             }
         }
-        else
+        finally
         {
-            // Không có quán nào trong phạm vi
-            foreach (var g in _guideLines) g.StrokeColor = Colors.Transparent;
-            DistIndicator.IsVisible = false;
+            _geoLock.Release();
         }
     }
 
-    void UpClicked(object s, EventArgs e) { vitriFake.Latitude += 0.0001; XuLyDiChuyen(); }
-    void DownClicked(object s, EventArgs e) { vitriFake.Latitude -= 0.0001; XuLyDiChuyen(); }
-    void LeftClicked(object s, EventArgs e) { vitriFake.Longitude -= 0.0001; XuLyDiChuyen(); }
-    void RightClicked(object s, EventArgs e) { vitriFake.Longitude += 0.0001; XuLyDiChuyen(); }
+    void UpClicked(object s, EventArgs e) { ResetSearchHighlight(); vitriFake.Latitude += 0.0001; XuLyDiChuyen(); }
+    void DownClicked(object s, EventArgs e) { ResetSearchHighlight(); vitriFake.Latitude -= 0.0001; XuLyDiChuyen(); }
+    void LeftClicked(object s, EventArgs e) { ResetSearchHighlight(); vitriFake.Longitude -= 0.0001; XuLyDiChuyen(); }
+    void RightClicked(object s, EventArgs e) { ResetSearchHighlight(); vitriFake.Longitude += 0.0001; XuLyDiChuyen(); }
 
     private void OnSearchButtonPressed(object s, EventArgs e) => SuggestionBox.IsVisible = false;
     private void OnSearchTextChanged(object s, TextChangedEventArgs e)
     {
         string keyword = e.NewTextValue?.ToLower() ?? "";
         if (string.IsNullOrWhiteSpace(keyword)) { SuggestionBox.IsVisible = false; return; }
-        var matches = DanhSachQuanAn.dsQuan.Where(q => q.Ten.ToLower().Contains(keyword)).ToList();
+        var matches = DanhSachQuanAn.dsQuan.ToList().Where(q => q.Ten.ToLower().Contains(keyword)).ToList();
         SuggestionList.ItemsSource = matches;
         SuggestionBox.IsVisible = matches.Any();
     }
@@ -335,10 +434,96 @@ public partial class MainPage : ContentPage
         {
             SuggestionBox.IsVisible = false;
             searchBar.Text = selected.Ten;
-            map.MoveToRegion(MapSpan.FromCenterAndRadius(new Location(selected.Lat, selected.Lng), Distance.FromMeters(150)));
-            if (FakeModeSwitch.IsToggled) { vitriFake = new Location(selected.Lat, selected.Lng); XuLyDiChuyen(); }
+
+            // 1. Bay đến vị trí quán
+            var targetLocation = new Location(selected.Lat, selected.Lng);
+            map.MoveToRegion(MapSpan.FromCenterAndRadius(targetLocation, Distance.FromMeters(100)));
+
+            // 2. HighLight bằng cách thiết lập trạng thái nhấp nháy
+            _manuallySelectedPoiName = selected.Ten;
+            HighlightSelectedPoi(selected.Ten); // Dọn dẹp các highlight cũ ngay lập tức
+            StartBlinkAnimation(selected.Ten);
+            
+            // Hiện bảng tên ghim nếu có thể tìm thấy Pin
+            if (_pinMap.TryGetValue(selected, out var pin))
+            {
+                // Một số nền tảng hỗ trợ hiện InfoWindow tự động
+                // pin.ShowInfoWindow(); 
+            }
+
         }
         if (s is CollectionView cv) cv.SelectedItem = null;
+    }
+
+    private async void StartBlinkAnimation(string targetName)
+    {
+        // Hủy bỏ hiệu ứng nhấp nháy cũ nếu có
+        _blinkCts?.Cancel();
+        _blinkCts = new CancellationTokenSource();
+        var token = _blinkCts.Token;
+
+        try
+        {
+            float alpha = 0.8f;
+            bool gettingBrighter = false;
+
+            while (!token.IsCancellationRequested)
+            {
+                var target = DanhSachQuanAn.dsQuan.ToList().FirstOrDefault(q => string.Equals(q.Ten, targetName, StringComparison.Ordinal));
+
+                if (target?.GeofenceCircle != null)
+                {
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        if (token.IsCancellationRequested) return;
+                        target.GeofenceCircle.StrokeColor = Color.FromArgb("#00FF00").WithAlpha(alpha); 
+                        target.GeofenceCircle.FillColor = Color.FromArgb("#00FF00").WithAlpha(alpha * 0.4f);
+                        target.GeofenceCircle.StrokeWidth = 15;
+                    });
+                }
+                else
+                {
+                    // Nếu chưa tìm thấy Circle (đang Sync), đợi một chút rồi thử lại
+                    await Task.Delay(200);
+                    continue;
+                }
+
+                if (gettingBrighter) alpha += 0.2f; else alpha -= 0.2f;
+                if (alpha <= 0.2f) gettingBrighter = true;
+                if (alpha >= 1.0f) gettingBrighter = false;
+
+                await Task.Delay(150, token); 
+            }
+        }
+        catch (TaskCanceledException) { }
+        finally
+        {
+            // Tìm lại quán đó để dọn dẹp màu sắc
+            var finalTarget = DanhSachQuanAn.dsQuan.FirstOrDefault(q => q.Ten == targetName);
+            if (finalTarget?.GeofenceCircle != null)
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    if (_manuallySelectedPoiName != targetName)
+                    {
+                        finalTarget.GeofenceCircle.StrokeColor = Colors.Transparent;
+                        finalTarget.GeofenceCircle.FillColor = Colors.Transparent;
+                    }
+                });
+            }
+        }
+    }
+
+    private void HighlightSelectedPoi(string targetName)
+    {
+        foreach (var q in DanhSachQuanAn.dsQuan.ToList())
+        {
+            if (q.Ten != targetName && q.GeofenceCircle != null)
+            {
+                q.GeofenceCircle.StrokeColor = Colors.Transparent;
+                q.GeofenceCircle.FillColor = Colors.Transparent;
+            }
+        }
     }
     private void OnFakeModeToggled(object s, ToggledEventArgs e) => map.IsShowingUser = !e.Value;
 

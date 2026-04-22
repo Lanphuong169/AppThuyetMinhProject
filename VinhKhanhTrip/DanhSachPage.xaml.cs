@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading;
@@ -24,6 +24,18 @@ public partial class DanhSachPage : ContentPage
 
         DanhSachCV.ItemsSource = DanhSachQuanAn.dsQuan;
 
+        // Đợi dữ liệu tải xong thì nạp lại danh sách
+        Task.Run(async () =>
+        {
+            while (!DanhSachQuanAn.IsLoaded) {
+                await Task.Delay(1000);
+            }
+            MainThread.BeginInvokeOnMainThread(() => RefreshList());
+        });
+
+        // Lắng nghe khi Firebase có dữ liệu mới (quán mới được thêm từ Admin)
+        DanhSachQuanAn.DataLoaded += OnDataReloaded;
+
         // Lắng nghe sự kiện đổi ngôn ngữ
         WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, (r, m) =>
         {
@@ -36,6 +48,23 @@ public partial class DanhSachPage : ContentPage
         Task.Run(async () => _cachedLocales = await TextToSpeech.Default.GetLocalesAsync());
 
         _ = UpdateUIStringsAsync();
+    }
+
+    private void OnDataReloaded(object? sender, EventArgs e)
+    {
+        // Tự động làm mới danh sách khi có quán mới từ Firebase
+        MainThread.BeginInvokeOnMainThread(() => RefreshList());
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+    }
+
+    // Hủy đăng ký khi trang bị hủy để tránh memory leak
+    ~DanhSachPage()
+    {
+        DanhSachQuanAn.DataLoaded -= OnDataReloaded;
     }
 
     private async Task UpdateUIStringsAsync()

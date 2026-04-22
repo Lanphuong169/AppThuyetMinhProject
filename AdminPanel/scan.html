@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Audio Guide - VinhKhanhTrip</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        
+        /* HIỂN THỊ KHUNG ĐIỆN THOẠI TRÊN BROWSER DESKTOP */
+        html { background-color: #000; display: flex; justify-content: center; min-height: 100vh; }
+        body { background: radial-gradient(circle at 50% 0%, #1a1a1a 0%, #000 70%); color: #e2e8f0; overflow-x: hidden; padding-bottom: 50px; -webkit-tap-highlight-color: transparent; width: 100%; max-width: 414px; position: relative; box-shadow: 0 0 50px rgba(0,0,0,1); min-height: 100vh; overflow-y: auto; }
+        
+        .hero { position: relative; height: 400px; background: #111; background-size: cover; background-position: center; z-index: 1; border-bottom-left-radius: 40px; border-bottom-right-radius: 40px; border-bottom: 1px solid #BF953F; box-shadow: 0 10px 40px rgba(191, 149, 63, 0.15);}
+        .hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,1) 100%); border-bottom-left-radius: 40px; border-bottom-right-radius: 40px;}
+        
+        .content { position: relative; z-index: 10; padding: 0 25px; margin-top: -160px; background: transparent; }
+        .title { font-family: 'Playfair Display', serif; font-size: 38px; font-weight: 900; background: linear-gradient(to right, #D4AF37, #FBE29D, #C5A028, #F9D976, #AA771C); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px; line-height: 1.1; letter-spacing: -1px; text-shadow: 0 4px 20px rgba(0,0,0,0.9);}
+        
+        .category { display: inline-block; background: transparent; border: 1px solid rgba(212, 175, 55, 0.6); color: #FBE29D; padding: 6px 18px; border-radius: 30px; font-size: 11px; font-weight: 700; letter-spacing: 2px; margin-bottom: 30px; text-transform: uppercase; box-shadow: 0 0 15px rgba(212,175,55,0.1); backdrop-filter: blur(5px);}
+        
+        .info-card { background: rgba(20,20,20,0.85); backdrop-filter: blur(15px); border: 1px solid rgba(212, 175, 55, 0.25); border-radius: 20px; padding: 25px; margin-bottom: 35px; box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 0 15px rgba(212,175,55,0.05);}
+        .info-row { display: flex; align-items: flex-start; gap: 15px; margin-bottom: 18px; font-size: 15px; color: #f1f5f9; line-height: 1.5; font-weight: 400;}
+        .info-row:last-child { margin-bottom: 0; }
+        .info-row i { color: #D4AF37; width: 22px; text-align: center; margin-top: 3px; font-size: 18px; text-shadow: 0 2px 10px rgba(212, 175, 55, 0.4);}
+        
+        .player-card { background: linear-gradient(145deg, #0f0f0f, #050505); border: 1px solid rgba(212,175,55,0.3); border-radius: 30px; padding: 40px 25px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.9), inset 0 0 20px rgba(212,175,55,0.05); margin-top: 10px; position: relative;}
+        .player-card::before { content: ''; position: absolute; top: -50px; left: -50px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(191, 149, 63,0.2) 0%, transparent 70%); border-radius: 50%; }
+        .player-title { font-family: 'Playfair Display', serif; font-weight: 900; font-size: 24px; color: #D4AF37; margin-bottom: 25px; letter-spacing: 1px; }
+        .audio-icon { font-size: 60px; background: linear-gradient(to bottom, #FBE29D, #D4AF37); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; animation: pulseGold 2.5s infinite; filter: drop-shadow(0 0 15px rgba(212,175,55,0.5)); }
+        @keyframes pulseGold { 0% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(191,149,63,0.3));} 50% { transform: scale(1.05); filter: drop-shadow(0 0 30px rgba(191,149,63,0.7)); } 100% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(191,149,63,0.3));} }
+        
+        .pay-btn { background: linear-gradient(to right, #D4AF37, #FBE29D, #C5A028); color: #000; border: none; padding: 18px 20px; font-size: 17px; font-weight: 800; border-radius: 100px; width: 100%; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 10px 30px rgba(212, 175, 55, 0.4); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); letter-spacing: 0.5px;}
+        .pay-btn:active { transform: scale(0.96); }
+        .pay-btn:hover { box-shadow: 0 15px 40px rgba(191, 149, 63, 0.6); transform: translateY(-3px); }
+        
+        .audio-controls { display: none; margin-top: 10px; position: relative; z-index: 2;}
+        .now-playing { font-size: 11px; color: #FCF6BA; margin-bottom: 25px; font-weight: 700; background: rgba(191,149,63,0.1); border: 1px solid rgba(191,149,63,0.3); padding: 8px 20px; border-radius: 30px; display: inline-block; letter-spacing: 2px; text-transform: uppercase;}
+        .btn-play { background: linear-gradient(135deg, #000, #1a1a1a); color: #FCF6BA; border: 2px solid #BF953F; width: 80px; height: 80px; border-radius: 50%; font-size: 28px; cursor: pointer; box-shadow: 0 15px 30px rgba(0,0,0,0.5), 0 0 20px rgba(191,149,63,0.2); display: flex; align-items: center; justify-content: center; margin: 0 auto; transition: all 0.2s; padding-left: 5px;}
+        .btn-play i.fa-pause { padding-left: 0; }
+        .btn-play:active { transform: scale(0.9); box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        
+        /* Modal Thanh Toán constrain to phone size */
+        #payment-modal { position: fixed; inset: 0; background: rgba(10,10,10,0.9); backdrop-filter: blur(15px); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; display: none; margin: 0 auto; width: 100%; max-width: 414px;}
+        .payment-box { background: linear-gradient(145deg, #1a1a1a, #111111); border-radius: 28px; padding: 35px 30px; width: 100%; max-width: 300px; text-align: center; border: 1px solid rgba(191,149,63,0.2); box-shadow: 0 25px 50px rgba(0,0,0,0.8), 0 0 30px rgba(191,149,63,0.1); }
+        .spinner { border: 4px solid rgba(255,255,255,0.05); width: 50px; height: 50px; border-radius: 50%; border-left-color: #BF953F; animation: spin 1s cubic-bezier(0.5, 0, 0.5, 1) infinite; margin: 0 auto 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .lang-selector-container { position: absolute; top: 20px; right: 20px; z-index: 100; }
+        .lang-circle { width: 44px; height: 44px; border-radius: 50%; background: #000; border: 2px solid #BF953F; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 15px rgba(191,149,63,0.3); overflow: hidden; transition: transform 0.2s;}
+        .lang-circle:active { transform: scale(0.9); }
+        .lang-circle img { width: 100%; height: 100%; object-fit: cover; }
+        .lang-dropdown { position: absolute; top: 60px; right: 0; background: rgba(17,17,17,0.95); backdrop-filter: blur(20px); border: 1px solid rgba(191,149,63,0.3); border-radius: 16px; width: 150px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); overflow: hidden; max-height: 300px; overflow-y: auto;}
+        .lang-item { padding: 14px 20px; font-size: 14px; font-weight: 600; color: #e2e8f0; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 12px; transition: all 0.2s;}
+        .lang-item img { width: 22px; border-radius: 3px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);}
+        .lang-item:hover { background: rgba(191, 149, 63, 0.15); color: #FCF6BA; }
+
+        .section-title { font-size: 13px; font-weight: 700; color: #BF953F; margin: 0 0 15px 5px; text-align: left; letter-spacing: 2.5px; text-transform: uppercase;}
+        .description-text { font-size: 15px; color: #d1d5db; line-height: 1.8; text-align: justify; margin-bottom: 40px; padding: 0 5px; font-weight: 300;}
+        .gallery-scroll { display: flex; gap: 18px; overflow-x: auto; padding-bottom: 20px; margin-bottom: 35px;  -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; margin-left: -25px; margin-right: -25px; padding-left: 25px; padding-right: 25px;}
+        .gallery-scroll::-webkit-scrollbar { display: none; }
+        .gallery-img { width: 180px; height: 260px; border-radius: 20px; object-fit: cover; flex-shrink: 0; border: 1px solid rgba(191,149,63,0.25); scroll-snap-align: center; box-shadow: 0 15px 30px rgba(0,0,0,0.6); transition: transform 0.3s;}
+        .gallery-img:active { transform: scale(0.98); }
+
+        /* Màn hình chào buộc chọn ngôn ngữ - Giao diện cao cấp hơn constrain to phone size */
+        #welcome-lang-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(25px); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 25px; margin: 0 auto; width: 100%; max-width: 414px;}
+        .lang-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 400px; height: 75vh; overflow-y:auto; padding-bottom: 20px; padding-top: 10px;}
+        .lang-grid-item { background: linear-gradient(145deg, #1a1a1a, #111111); border: 1px solid rgba(191,149,63,0.2); border-radius: 20px; padding: 20px 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; cursor: pointer; color: #e2e8f0; font-weight: 600; font-size: 14px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); transition: all 0.2s; }
+        .lang-grid-item img { width: 45px; border-radius: 4px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);}
+        .lang-grid-item:active { background: rgba(191,149,63,0.1); border-color: #BF953F; transform: scale(0.96);}
+
+        .upgrade-card {
+            background: rgba(191,149,63,0.05);
+            border: 1px dashed rgba(191,149,63,0.4);
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 25px;
+            text-align: center;
+        }
+
+        /* Dual Audio Items */
+        .audio-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        .audio-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .audio-item.premium {
+            border-color: rgba(191,149,63,0.2);
+            background: linear-gradient(145deg, rgba(20,20,20,0.8), rgba(5,5,5,0.9));
+        }
+        .audio-item.premium.active-play {
+            border-color: #BF953F;
+            box-shadow: 0 0 20px rgba(191,149,63,0.15);
+        }
+        .audio-item.standard.active-play {
+            border-color: #64748b;
+            box-shadow: 0 0 20px rgba(100,116,139,0.1);
+        }
+        .audio-item-info {
+            text-align: left;
+            flex: 1;
+        }
+        .audio-item-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .audio-item-desc {
+            font-size: 11px;
+            color: #94a3b8;
+            letter-spacing: 0.5px;
+        }
+        .btn-mini-play {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #111;
+            border: 2px solid #334155;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            margin-left: 15px;
+        }
+        .btn-mini-play.vip {
+            border-color: #BF953F;
+            color: #FCF6BA;
+            background: linear-gradient(135deg, #000, #1a1a1a);
+        }
+        .btn-mini-play:active { transform: scale(0.9); }
+        
+        .vip-status-tag {
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 800;
+            margin-top: 6px;
+            display: inline-block;
+        }
+        .tag-free { background: rgba(100,116,139,0.2); color: #94a3b8; }
+        .tag-premium { background: rgba(191,149,63,0.15); color: #FCF6BA; }
+        .tag-unlocked { background: #10b981; color: #fff; }
+
+        .btn-unlock-vip {
+            background: linear-gradient(to right, #BF953F, #FCF6BA);
+            color: #000;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 5px 15px rgba(191,149,63,0.3);
+        }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div id="welcome-lang-overlay">
+        <h2 style="color: #fff; margin-bottom: 10px; font-weight: 800; font-size: 26px; text-align: center;">Welcome</h2>
+        <p style="color: #cbd5e1; font-size: 14px; margin-bottom: 30px; text-align: center;">Please select your language to continue</p>
+        <div class="lang-grid">
+            <div class="lang-grid-item lang-trigger" data-lang="vi" data-code="vi-VN" data-icon="https://flagcdn.com/w40/vn.png"><img src="https://flagcdn.com/w40/vn.png"> Tiếng Việt</div>
+            <div class="lang-grid-item lang-trigger" data-lang="en" data-code="en-US" data-icon="https://flagcdn.com/w40/gb.png"><img src="https://flagcdn.com/w40/gb.png"> English</div>
+            <div class="lang-grid-item lang-trigger" data-lang="de" data-code="de-DE" data-icon="https://flagcdn.com/w40/de.png"><img src="https://flagcdn.com/w40/de.png"> Deutsch</div>
+            <div class="lang-grid-item lang-trigger" data-lang="fr" data-code="fr-FR" data-icon="https://flagcdn.com/w40/fr.png"><img src="https://flagcdn.com/w40/fr.png"> Français</div>
+            <div class="lang-grid-item lang-trigger" data-lang="ru" data-code="ru-RU" data-icon="https://flagcdn.com/w40/ru.png"><img src="https://flagcdn.com/w40/ru.png"> Русский</div>
+            <div class="lang-grid-item lang-trigger" data-lang="es" data-code="es-ES" data-icon="https://flagcdn.com/w40/es.png"><img src="https://flagcdn.com/w40/es.png"> Español</div>
+            <div class="lang-grid-item lang-trigger" data-lang="zh" data-code="zh-CN" data-icon="https://flagcdn.com/w40/cn.png"><img src="https://flagcdn.com/w40/cn.png"> 中文</div>
+            <div class="lang-grid-item lang-trigger" data-lang="ja" data-code="ja-JP" data-icon="https://flagcdn.com/w40/jp.png"><img src="https://flagcdn.com/w40/jp.png"> 日本語</div>
+            <div class="lang-grid-item lang-trigger" data-lang="ko" data-code="ko-KR" data-icon="https://flagcdn.com/w40/kr.png" style="grid-column: span 2;"><img src="https://flagcdn.com/w40/kr.png"> 한국어</div>
+        </div>
+    </div>
+
+    <div class="lang-selector-container">
+        <div class="lang-circle" id="btn-lang" style="display: none;">
+            <img src="https://flagcdn.com/w40/vn.png" alt="VN" id="current-lang-icon">
+        </div>
+        <div class="lang-dropdown hidden" id="lang-menu">
+            <div class="lang-item lang-trigger" data-lang="vi" data-code="vi-VN" data-icon="https://flagcdn.com/w40/vn.png"><img src="https://flagcdn.com/w40/vn.png"> Tiếng Việt</div>
+            <div class="lang-item lang-trigger" data-lang="en" data-code="en-US" data-icon="https://flagcdn.com/w40/gb.png"><img src="https://flagcdn.com/w40/gb.png"> English</div>
+            <div class="lang-item lang-trigger" data-lang="de" data-code="de-DE" data-icon="https://flagcdn.com/w40/de.png"><img src="https://flagcdn.com/w40/de.png"> Deutsch</div>
+            <div class="lang-item lang-trigger" data-lang="fr" data-code="fr-FR" data-icon="https://flagcdn.com/w40/fr.png"><img src="https://flagcdn.com/w40/fr.png"> Français</div>
+            <div class="lang-item lang-trigger" data-lang="ru" data-code="ru-RU" data-icon="https://flagcdn.com/w40/ru.png"><img src="https://flagcdn.com/w40/ru.png"> Русский</div>
+            <div class="lang-item lang-trigger" data-lang="es" data-code="es-ES" data-icon="https://flagcdn.com/w40/es.png"><img src="https://flagcdn.com/w40/es.png"> Español</div>
+            <div class="lang-item lang-trigger" data-lang="zh" data-code="zh-CN" data-icon="https://flagcdn.com/w40/cn.png"><img src="https://flagcdn.com/w40/cn.png"> 中文</div>
+            <div class="lang-item lang-trigger" data-lang="ja" data-code="ja-JP" data-icon="https://flagcdn.com/w40/jp.png"><img src="https://flagcdn.com/w40/jp.png"> 日本語</div>
+            <div class="lang-item lang-trigger" data-lang="ko" data-code="ko-KR" data-icon="https://flagcdn.com/w40/kr.png"><img src="https://flagcdn.com/w40/kr.png"> 한국어</div>
+        </div>
+    </div>
+
+    <div class="hero" id="ui-hero" style="background-image: url('https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&q=80&w=1000');"></div>
+    
+    <div class="content">
+        <h1 class="title" id="ui-title">Đang kết nối...</h1>
+        <div class="category" id="ui-type">THÔNG TIN QUÁN</div>
+        
+        <div class="info-card">
+            <div class="info-row"><i class="fa-solid fa-location-dot"></i> <span id="ui-address">...</span></div>
+            <div class="info-row"><i class="fa-solid fa-clock"></i> <span id="ui-time">...</span></div>
+            <div class="info-row"><i class="fa-solid fa-money-bill-wave"></i> <span id="ui-price">...</span></div>
+            <div class="info-row"><i class="fa-solid fa-phone"></i> <span id="ui-phone">...</span></div>
+        </div>
+        
+        <h3 class="section-title" id="lbl-desc">Mô tả</h3>
+        <p class="description-text" id="ui-desc">Đang tải mô tả chi tiết...</p>
+
+        <h3 class="section-title" id="lbl-gallery">Hình ảnh & Thực đơn</h3>
+        <div class="gallery-scroll" id="ui-gallery">
+            <!-- Images will be pushed here -->
+        </div>
+        
+        <div class="player-card">
+            <h3 class="player-title" style="margin-bottom: 5px;">AUDIO GUIDE</h3>
+            <p style="font-size: 12px; color: #64748b; margin-bottom: 25px;">Chọn phiên bản âm thanh để bắt đầu nghe</p>
+            
+            <div class="audio-grid">
+                <!-- MỤC 1: BẢN PHỔ THÔNG (MIỄN PHÍ) -->
+                <div class="audio-item standard" id="item-standard" style="border-left: 4px solid #64748b;">
+                    <div class="audio-item-info">
+                        <div class="audio-item-title"><i class="fa-solid fa-robot"></i> BẢN PHỔ THÔNG</div>
+                        <div class="audio-item-desc">Nghe giọng đọc AI (Hoàn toàn miễn phí)</div>
+                        <div class="vip-status-tag tag-free"><i class="fa-solid fa-check-circle"></i> ĐÃ SẴN SÀNG</div>
+                    </div>
+                    <button class="btn-mini-play" id="btn-play-standard" onclick="toggleAudio('standard')">
+                        <i class="fa-solid fa-play"></i>
+                    </button>
+                </div>
+
+                <!-- MỤC 2: BẢN THUYẾT MINH VIP -->
+                <div class="audio-item premium" id="item-premium" style="border-left: 4px solid #BF953F;">
+                    <div class="audio-item-info">
+                        <div class="audio-item-title" style="color: #FCF6BA;"><i class="fa-solid fa-crown"></i> THUYẾT MINH VIP</div>
+                        <div class="audio-item-desc" id="premium-desc">Giọng đọc diễn cảm bởi người thật</div>
+                        <div id="premium-status-tag" class="vip-status-tag tag-premium">CẦN NÂNG CẤP</div>
+                    </div>
+                    
+                    <div id="premium-action-area">
+                        <button class="btn-unlock-vip" onclick="handleVipClick()">
+                            <i class="fa-solid fa-gem"></i> NÂNG CẤP VIP
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <audio id="native-audio" style="display: none;"></audio>
+            
+            <div id="no-audio-section" class="hidden">
+                <p style="color: #ef4444; font-size: 15px; font-weight: bold; background: rgba(239, 68, 68, 0.1); padding: 15px; border-radius: 10px; margin-top: 20px;">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Content not available for this location.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Payment Modal -->
+    <div id="payment-modal">
+        <div class="payment-box">
+            <div class="spinner" id="pay-spinner"></div>
+            <i class="fa-solid fa-circle-check hidden" id="pay-success-icon" style="font-size: 60px; color: #10b981; margin-bottom: 20px;"></i>
+            <h3 style="color: #fff; margin-bottom: 10px; font-size: 20px;" id="pay-title">Xác thực thanh toán...</h3>
+            <p style="font-size: 14px; color: #cbd5e1;" id="pay-desc">Hệ thống đang kết nối với ngân hàng</p>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
+    <script>
+        // Cấu hình Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAzZ8WiAotJgKlyBd-QA4aQSXmpqHEzSeg",
+            authDomain: "vinhkhanhtrip.firebaseapp.com",
+            databaseURL: "https://vinhkhanhtrip-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "vinhkhanhtrip"
+        };
+        firebase.initializeApp(firebaseConfig);
+        
+        // Trích xuất ID
+        let poiId = null;
+        if(window.location.hash && window.location.hash.includes("poi=")) {
+            poiId = window.location.hash.split("poi=")[1].split("&")[0];
+        } else {
+            const urlParams = new URLSearchParams(window.location.search);
+            poiId = urlParams.get('poi');
+        }
+        
+        let targetAudioUrl = null;
+        let audioUrlsDict = {};
+        let translatedTtsText = null;
+        let currentLangCode = "vi-VN";
+        let currentLangIso = "vi";
+        let isPlayingStandard = false;
+        let isPlayingPremium = false;
+        let isPaid = false; 
+
+        // Các biến UI rút gọn
+        const modalPay = document.getElementById("payment-modal");
+        const nativeAudio = document.getElementById("native-audio");
+
+        // Ghi nhận lượt quét QR
+        function logScan() {
+            if(!poiId) return;
+            const today = new Date().toLocaleDateString('en-CA');
+            
+            // 1. Tăng lượt quét cho quán cụ thể (All-time)
+            firebase.database().ref('quanan/' + poiId + '/scanCount').transaction((count) => (count || 0) + 1);
+            
+            // 2. Tăng tổng lượt quét trong ngày (Global)
+            firebase.database().ref('analytics/' + today + '/scans').transaction((count) => (count || 0) + 1);
+
+            // 3. Tăng lượt quét riêng cho quán này trong ngày hôm nay (Dùng cho bộ lọc sau này)
+            firebase.database().ref(`analytics/${today}/pois/${poiId}/scans`).transaction((count) => (count || 0) + 1);
+        }
+
+        // Ghi nhận doanh thu Analytics
+        function logRevenue() {
+            if(!poiId) return;
+            const today = new Date().toLocaleDateString('en-CA');
+            
+            // 1. Ghi nhận doanh thu tổng (Global)
+            const analyticsRef = firebase.database().ref('analytics/' + today);
+            analyticsRef.transaction((currentData) => {
+                if (!currentData) return { revenue: 1, payments: 1, scans: 0 };
+                currentData.revenue = (currentData.revenue || 0) + 1;
+                currentData.payments = (currentData.payments || 0) + 1;
+                return currentData;
+            });
+
+            // 2. Ghi nhận doanh thu riêng cho quán này trong ngày hôm nay
+            firebase.database().ref(`analytics/${today}/pois/${poiId}/revenue`).transaction((count) => (count || 0) + 1);
+
+            // 3. Ghi nhận doanh thu tích lũy toàn thời gian của quán (Để bảng xếp hạng luôn có dữ liệu)
+            firebase.database().ref(`quanan/${poiId}/revenue`).transaction((count) => (count || 0) + 1);
+        }
+
+        function checkPaymentStatus() {
+            if(!poiId) return false;
+            return localStorage.getItem('paid_poi_' + poiId) === 'true';
+        }
+
+        function updateAudioUI() {
+            const hasPremium = !!targetAudioUrl;
+            isPaid = checkPaymentStatus();
+            
+            const itemPremium = document.getElementById("item-premium");
+            const premiumTag = document.getElementById("premium-status-tag");
+            const premiumDesc = document.getElementById("premium-desc");
+            const premiumAction = document.getElementById("premium-action-area");
+
+            if (!hasPremium) {
+                itemPremium.style.opacity = "0.5";
+                premiumDesc.innerText = "Bản thu âm Studio đang được chuẩn bị...";
+                premiumAction.innerHTML = '<span style="font-size:11px; color:#64748b">CHƯA HỖ TRỢ</span>';
+                premiumTag.className = "vip-status-tag tag-free";
+                premiumTag.innerText = "SẮP CÓ";
+            } else {
+                itemPremium.style.opacity = "1";
+                premiumDesc.innerText = "Giọng đọc chuyên nghiệp bởi người thật";
+                
+                if (isPaid) {
+                    premiumTag.className = "vip-status-tag tag-unlocked";
+                    premiumTag.innerHTML = '<i class="fa-solid fa-crown"></i> VIP ĐÃ KÍCH HOẠT';
+                    premiumAction.innerHTML = `
+                        <button class="btn-mini-play vip" id="btn-play-premium" onclick="toggleAudio('premium')">
+                            <i class="fa-solid fa-play"></i>
+                        </button>
+                    `;
+                } else {
+                    premiumTag.className = "vip-status-tag tag-premium";
+                    premiumTag.innerText = "QUYỀN LỢI VIP";
+                    premiumAction.innerHTML = `
+                        <button class="btn-unlock-vip" onclick="handleVipClick()">
+                            <i class="fa-solid fa-gem"></i> NÂNG CẤP VIP
+                        </button>
+                    `;
+                }
+            }
+        }
+        
+        if(!poiId) {
+            document.body.innerHTML = "<div style='padding: 50px 20px; text-align: center;'><h2 style='color:#ef4444;'><i class='fa-solid fa-bug'></i> LỖI MÃ QR</h2><p style='margin-top:20px;'>Mã QR không chứa thông tin địa điểm hợp lệ.</p></div>";
+        } else {
+            // Load từ db
+            firebase.database().ref('quanan/' + poiId).once('value').then(snapshot => {
+                const data = snapshot.val();
+                if(!data) {
+                    document.body.innerHTML = "<div style='padding: 50px 20px; text-align: center;'><h2 style='color:#ef4444;'><i class='fa-solid fa-shop-slash'></i> ĐỊA ĐIỂM ĐÃ ĐÓNG</h2><p style='margin-top:20px;'>Quán ăn đã ngừng hoạt động hoặc bị xoá khỏi hệ thống.</p></div>";
+                    return;
+                }
+
+                // KIỂM TRA PHÊ DUYỆT (Bản ghi cũ không có status mặc định là approved)
+                if (data.status === "pending") {
+                    document.body.innerHTML = `
+                        <div style='padding: 100px 20px; text-align: center;'>
+                            <i class='fa-solid fa-hourglass-half' style='font-size: 60px; color: #BF953F; margin-bottom: 20px;'></i>
+                            <h2 style='color:#fff; font-family: Playfair Display, serif;'>QUÁN ĐANG CHỜ DUYỆT</h2>
+                            <p style='margin-top:20px; opacity: 0.7; line-height: 1.6;'>
+                                Địa điểm này đang trong quá trình kiểm duyệt nội dung.<br>
+                                Vui lòng quay lại sau!
+                            </p>
+                            <button onclick="location.reload()" style="margin-top: 30px; background: none; border: 1px solid #BF953F; color: #BF953F; padding: 10px 20px; border-radius: 30px;">TẢI LẠI</button>
+                        </div>`;
+                    return;
+                }
+
+                // KIỂM TRA HẾT HẠN HỢP ĐỒNG
+                if (data.expiryDate) {
+                    const expiry = new Date(data.expiryDate);
+                    const now = new Date();
+                    if (now > expiry) {
+                        document.body.innerHTML = `
+                            <div style='padding: 100px 20px; text-align: center;'>
+                                <i class='fa-solid fa-clock-rotate-left' style='font-size: 60px; color: #ef4444; margin-bottom: 20px;'></i>
+                                <h2 style='color:#fff; font-family: Playfair Display, serif;'>DỊCH VỤ TẠM NGƯNG</h2>
+                                <p style='margin-top:20px; opacity: 0.7; line-height: 1.6;'>
+                                    Rất tiếc, dịch vụ thuyết minh tại địa điểm này đã tạm thời ngưng hoạt động.<br>
+                                    Vui lòng liên hệ quản lý quán để được hỗ trợ!
+                                </p>
+                                <div style="margin-top: 30px; border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 15px; background: rgba(255,255,255,0.03);">
+                                    <p style="font-size: 13px; opacity: 0.5;">Mã địa điểm: ${poiId}</p>
+                                </div>
+                            </div>`;
+                        return;
+                    }
+                }
+                
+                window.cachedPoiData = data; // Cache data globally 
+                document.title = data.Ten + " - Thuyết Minh";
+                document.getElementById("ui-title").innerText = data.Ten || "Quán vô danh";
+                document.getElementById("ui-type").innerText = (data.Loai || "Khác").toUpperCase();
+                document.getElementById("ui-address").innerText = data.DiaChi || "Đang cập nhật";
+                document.getElementById("ui-time").innerText = data.OpeningHours || "Giờ tự do";
+                document.getElementById("ui-price").innerText = data.PriceRange || "Giá liên hệ";
+                document.getElementById("ui-phone").innerText = data.SoDienThoai || "Không có SĐT";
+                document.getElementById("ui-desc").innerText = data.MoTa || "Không có mô tả cho quán này.";
+                
+                if(data.ImageUrl) {
+                    document.getElementById("ui-hero").style.backgroundImage = `url('${data.ImageUrl}')`;
+                }
+                
+                // Nạp gallery
+                const gallery = document.getElementById("ui-gallery");
+                gallery.innerHTML = "";
+                let hasImages = false;
+                
+                const injectImg = (url) => {
+                    // Lọc bỏ mọi giá trị rác (null, undefined, chuỗi trống, hoặc chuỗi "null")
+                    if(!url || typeof url !== 'string' || url.trim() === "" || 
+                       url === "null" || url === "undefined" || url.includes("undefined")) return;
+                    
+                    hasImages = true;
+                    // Thêm onerror để nếu ảnh vẫn lỗi đường truyền thì tự ẩn khung đi, không hiện icon hỏng
+                    gallery.innerHTML += `<img src="${url}" class="gallery-img" onerror="this.style.display='none'">`;
+                };
+                
+                injectImg(data.ImageUrl);
+                injectImg(data.ImageUrl2);
+                injectImg(data.ImageUrl3);
+                
+                if(data.MenuItems && Array.isArray(data.MenuItems)) {
+                    data.MenuItems.forEach(url => injectImg(url));
+                }
+                
+                if(!hasImages) {
+                    gallery.innerHTML = "<p style='color: #64748b; font-size:13px; text-align:left; padding-left:5px;'>Chưa có hình ảnh minh họa.</p>";
+                } else {
+                    // Logic Tự Động Trượt Gallery
+                    let scrollInterval;
+                    const startAutoScroll = () => {
+                        scrollInterval = setInterval(() => {
+                            if (!gallery) return;
+                            const maxScroll = gallery.scrollWidth - gallery.clientWidth;
+                            if (maxScroll <= 0) return; // Nếu ảnh ít quá không bị tràn thì không trượt
+                            
+                            // Trượt thêm 200px (xấp xỉ 1 khung ảnh) mỗi 3 giây
+                            gallery.scrollBy({ left: 200, behavior: 'smooth' });
+                            
+                            // Nếu đã lướt tới cuối cùng thì sau 1 lát cuộn mượt về đầu 
+                            if (gallery.scrollLeft + gallery.clientWidth >= gallery.scrollWidth - 10) {
+                                setTimeout(() => { gallery.scrollTo({ left: 0, behavior: 'smooth' }); }, 1500);
+                            }
+                        }, 3000);
+                    };
+                    
+                    const stopAutoScroll = () => clearInterval(scrollInterval);
+
+                    // Nếu khách chạm tay lướt thì dừng trượt tự động để khỏi cướp tay khách
+                    gallery.addEventListener("touchstart", stopAutoScroll);
+                    gallery.addEventListener("touchend", startAutoScroll);
+                    gallery.addEventListener("mouseenter", stopAutoScroll); // Cho máy tính
+                    gallery.addEventListener("mouseleave", startAutoScroll); // Cho máy tính
+
+                    // Khởi động trượt
+                    startAutoScroll();
+                }
+                
+                const originDescRaw = data.MoTa || "Điểm đến này chưa có mô tả.";
+                document.getElementById("ui-desc").innerText = originDescRaw;
+                document.getElementById("ui-desc").setAttribute("data-origin", originDescRaw);
+                
+                audioUrlsDict = data.AudioUrls || {};
+                const translations = data.Translations || {};
+                targetAudioUrl = audioUrlsDict[currentLangIso] || null;
+                
+                // Ưu tiên bản dịch đã lưu
+                if (translations[currentLangIso]) {
+                    translatedTtsText = translations[currentLangIso];
+                    document.getElementById("ui-desc").innerText = translatedTtsText;
+                } else {
+                    translatedTtsText = originDescRaw; // default is vi
+                }
+                
+                // Logic theo dõi lượt quét (Chỉ chạy 1 lần khi load trang)
+                if (!window.hasLoggedEntry) {
+                    logScan();
+                    // window.hasLoggedEntry = true; // Sẽ set sau khi gọi cả 2 log
+                }
+
+                // Firebase Presence: Theo dõi người dùng trực tuyến
+                const sessionId = "web_" + Math.random().toString(36).substring(7);
+                const presenceRef = firebase.database().ref('presence/' + sessionId);
+                
+                // Theo dõi lưu lượng theo giờ
+                const logHourlyTraffic = () => {
+                    const now = new Date();
+                    const day = now.toLocaleDateString('en-CA');
+                    const hour = now.getHours();
+                    firebase.database().ref(`analytics/hourly/${day}/${hour}`).transaction(c => (c || 0) + 1);
+                };
+
+                // Định danh thiết bị để đếm duy nhất (1 thiết bị mở nhiều tab vẫn tính là 1)
+                const getDeviceId = () => {
+                    let id = localStorage.getItem('vktrip_device_id');
+                    if (!id) {
+                        id = 'd_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+                        localStorage.setItem('vktrip_device_id', id);
+                    }
+                    return id;
+                };
+                const deviceUniqueId = getDeviceId();
+
+                const updateStatus = () => {
+                    presenceRef.set({
+                        platform: 'web',
+                        source: 'webapp',
+                        poiId: poiId,
+                        deviceId: deviceUniqueId,
+                        last_seen: firebase.database.ServerValue.TIMESTAMP
+                    });
+                };
+                
+                const logVisitHistory = () => {
+                    firebase.database().ref('device_history/' + sessionId).set({
+                        deviceId: deviceUniqueId,
+                        device: (navigator.userAgent.includes("Mobi") ? "Mobile Browser" : "Desktop Browser"),
+                        platform: 'web',
+                        source: 'webapp',
+                        entry_time: firebase.database.ServerValue.TIMESTAMP,
+                        status: 'entered'
+                    });
+                };
+                
+                updateStatus();
+                if (!window.hasLoggedEntry) {
+                    logHourlyTraffic();
+                    logVisitHistory();
+                    window.hasLoggedEntry = true;
+                }
+                setInterval(updateStatus, 30000); // Gửi heartbeat mỗi 30 giây
+                presenceRef.onDisconnect().remove();
+
+                // Logic theo dõi thời gian nghe Audio
+                let audioStartTime = null;
+                const logAudioUsage = (durationSec) => {
+                    if (!poiId || durationSec < 1) return;
+                    const audioStatRef = firebase.database().ref(`analytics/audio_rank/${poiId}`);
+                    audioStatRef.child('total_seconds').transaction(c => (c || 0) + durationSec);
+                    audioStatRef.child('plays').transaction(c => (c || 0) + 1);
+                };
+
+                const startTracking = () => { audioStartTime = Date.now(); };
+                const stopTracking = () => {
+                    if (audioStartTime) {
+                        const duration = Math.floor((Date.now() - audioStartTime) / 1000);
+                        logAudioUsage(duration);
+                        audioStartTime = null;
+                    }
+                };
+
+                // Gán vào các sự kiện âm thanh
+                nativeAudio.onplay = startTracking;
+                nativeAudio.onpause = stopTracking;
+                nativeAudio.onended = stopTracking;
+                window.addEventListener('beforeunload', stopTracking);
+            });
+        }
+        
+        // Cầu nối Dịch tự động Google
+        async function translateText(text, targetIso) {
+            if(!text || targetIso === "vi") return text;
+            try {
+                const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=vi&tl=${targetIso}&dt=t&q=${encodeURIComponent(text)}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                let translated = "";
+                data[0].forEach(item => { translated += item[0]; });
+                return translated;
+            } catch (error) {
+                console.error("Lỗi thông dịch: ", error);
+                return text; // Fallback
+            }
+        }
+        
+        // Mockup Nút Mua Hàng
+        window.handleVipClick = function() {
+            modalPay.style.display = "flex";
+            
+            // Giả lập Thanh toán Apple Pay / Card
+            setTimeout(() => {
+                document.getElementById("pay-spinner").classList.add("hidden");
+                document.getElementById("pay-success-icon").classList.remove("hidden");
+                document.getElementById("pay-title").innerText = "Payment Successful!";
+                document.getElementById("pay-desc").innerText = "VIP Audio is now unlocked.";
+                
+                setTimeout(() => {
+                    modalPay.style.display = "none";
+                    localStorage.setItem('paid_poi_' + poiId, 'true');
+                    
+                    // Ghi nhận doanh thu lên Firebase
+                    logRevenue();
+                    
+                    updateAudioUI();
+                    
+                    // Reset spinner cho lần sau
+                    document.getElementById("pay-spinner").classList.remove("hidden");
+                    document.getElementById("pay-success-icon").classList.add("hidden");
+                    document.getElementById("pay-title").innerText = "Authenticating...";
+                }, 1800);
+            }, 2500);
+        };
+        
+        // Play / Pause logic
+        window.toggleAudio = function(type) {
+            const hasPremium = !!targetAudioUrl;
+            isPaid = checkPaymentStatus();
+            
+            const btnStandard = document.getElementById("btn-play-standard");
+            const btnPremium = document.getElementById("btn-play-premium");
+            const itemStandard = document.getElementById("item-standard");
+            const itemPremium = document.getElementById("item-premium");
+
+            if (type === 'standard') {
+                if (isPlayingStandard) {
+                    // Dừng AI
+                    window.speechSynthesis.pause();
+                    isPlayingStandard = false;
+                    btnStandard.innerHTML = '<i class="fa-solid fa-play"></i>';
+                    itemStandard.classList.remove("active-play");
+                } else {
+                    // Phát AI
+                    if (isPlayingPremium) toggleAudio('premium'); // Dừng VIP nếu đang phát
+                    
+                    if(window.speechSynthesis.paused && currentLangCode === utteranceCacheLang) {
+                        window.speechSynthesis.resume();
+                    } else {
+                        window.speechSynthesis.cancel();
+                        const utterance = new SpeechSynthesisUtterance(translatedTtsText);
+                        utterance.lang = currentLangCode;
+                        utteranceCacheLang = currentLangCode;
+                        utterance.onend = () => {
+                            isPlayingStandard = false;
+                            btnStandard.innerHTML = '<i class="fa-solid fa-play"></i>';
+                            itemStandard.classList.remove("active-play");
+                        };
+                        window.speechSynthesis.speak(utterance);
+                    }
+                    isPlayingStandard = true;
+                    btnStandard.innerHTML = '<i class="fa-solid fa-pause"></i>';
+                    itemStandard.classList.add("active-play");
+                }
+            } else if (type === 'premium') {
+                if (!isPaid || !hasPremium) return;
+
+                if (isPlayingPremium) {
+                    // Dừng VIP
+                    nativeAudio.pause();
+                    isPlayingPremium = false;
+                    btnPremium.innerHTML = '<i class="fa-solid fa-play"></i>';
+                    itemPremium.classList.remove("active-play");
+                } else {
+                    // Phát VIP
+                    if (isPlayingStandard) toggleAudio('standard'); // Dừng AI nếu đang phát
+                    
+                    if(nativeAudio.src !== targetAudioUrl) nativeAudio.src = targetAudioUrl;
+                    nativeAudio.play();
+                    isPlayingPremium = true;
+                    btnPremium.innerHTML = '<i class="fa-solid fa-pause"></i>';
+                    itemPremium.classList.add("active-play");
+                }
+            }
+        };
+        let utteranceCacheLang = "vi-VN";
+        
+        // Re-toggle play button if audio finishes
+        nativeAudio.onended = () => {
+             isPlayingPremium = false;
+             const btnPremium = document.getElementById("btn-play-premium");
+             if(btnPremium) btnPremium.innerHTML = '<i class="fa-solid fa-play"></i>';
+             const itemPremium = document.getElementById("item-premium");
+             if(itemPremium) itemPremium.classList.remove("active-play");
+        };
+        
+        // --- Logic Ngôn Ngữ Mô Phỏng ---
+        const btnLang = document.getElementById("btn-lang");
+        const langMenu = document.getElementById("lang-menu");
+        
+        btnLang.addEventListener("click", (e) => {
+            e.stopPropagation();
+            langMenu.classList.toggle("hidden");
+        });
+        
+        // Đóng menu khi chạm/click ra ngoài
+        document.addEventListener("click", () => {
+            langMenu.classList.add("hidden");
+        });
+        
+        langMenu.addEventListener("click", (e) => {
+            e.stopPropagation();
+        });
+        
+        document.querySelectorAll(".lang-trigger").forEach(item => {
+            item.addEventListener("click", async (e) => {
+                const lang = e.currentTarget.getAttribute("data-lang");
+                const code = e.currentTarget.getAttribute("data-code");
+                const icon = e.currentTarget.getAttribute("data-icon");
+                document.getElementById("current-lang-icon").src = icon;
+                
+                // Đóng menu / overlay
+                langMenu.classList.add("hidden");
+                document.getElementById("welcome-lang-overlay").style.display = "none";
+                document.getElementById("btn-lang").style.display = "flex"; // Hiện cái vòng tròn
+                
+                currentLangIso = lang;
+                currentLangCode = code;
+                
+                // Dịch các text tĩnh sang tiếng Anh (mô phỏng)
+                if(lang !== "vi") {
+                    document.getElementById("ui-type").innerText = "RESTAURANT INFO";
+                    document.getElementById("lbl-desc").innerText = "Info / Description";
+                    document.getElementById("lbl-gallery").innerText = "Gallery / Menu";
+                } else {
+                    document.getElementById("ui-type").innerText = "THÔNG TIN QUÁN";
+                    document.getElementById("lbl-desc").innerText = "Mô tả";
+                    document.getElementById("lbl-gallery").innerText = "Hình ảnh & Thực đơn";
+                }
+                
+                // Dừng âm thanh cũ khi đổi tiếng
+                if(isPlayingStandard) {
+                    window.speechSynthesis.cancel();
+                    isPlayingStandard = false;
+                }
+                if(isPlayingPremium) {
+                    nativeAudio.pause();
+                    isPlayingPremium = false;
+                }
+                
+                // Đổi target Audio Native theo ngôn ngữ nếu có, nếu chưa có thì Null để fall back về TTS
+                targetAudioUrl = audioUrlsDict[currentLangIso] || null;
+
+                // Cập nhật nội dung (Ưu tiên bản dịch lưu sẵn)
+                const uiDescSpan = document.getElementById("ui-desc");
+                const translations = (window.cachedPoiData && window.cachedPoiData.Translations) ? window.cachedPoiData.Translations : {};
+                
+                if (translations[lang]) {
+                    uiDescSpan.innerText = translations[lang];
+                } else if (lang !== "vi") {
+                    uiDescSpan.innerText = "Translating...";
+                    const originDesc = uiDescSpan.getAttribute("data-origin");
+                    uiDescSpan.innerText = await translateText(originDesc, lang);
+                } else {
+                    const originDesc = uiDescSpan.getAttribute("data-origin");
+                    if(originDesc) uiDescSpan.innerText = originDesc;
+                }
+                
+                translatedTtsText = uiDescSpan.innerText;
+                
+                // Dừng mọi âm thanh cũ khi đổi tiếng
+                window.speechSynthesis.cancel();
+                nativeAudio.pause();
+                isPlayingStandard = false;
+                isPlayingPremium = false;
+
+                updateAudioUI();
+            });
+        });
+        
+    </script>
+</body>
+</html>

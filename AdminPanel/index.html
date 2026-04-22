@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Ẩm Thực - VinhKhanhTrip</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fa-solid fa-map-location-dot"></i>
+                <span>VinhKhanhAdmin</span>
+            </div>
+            <div class="user-profile hidden" id="user-profile" style="cursor: pointer; transition: all 0.3s ease; border: 1px solid transparent;" onmouseover="this.style.background='rgba(255,215,0,0.05)'; this.style.borderColor='rgba(255,215,0,0.1)'" onmouseout="this.style.background='transparent'; this.style.borderColor='transparent'">
+                <div class="user-avatar" id="user-avatar-initial">A</div>
+                <div class="user-info">
+                    <div class="user-name" id="display-user-name">Admin</div>
+                    <div class="user-role" id="display-user-role">Quản trị viên</div>
+                </div>
+                <button id="btn-logout" class="btn-logout" title="Đăng xuất">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="#" class="active admin-only" id="menu-stats"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="#" id="menu-pois"><i class="fa-solid fa-utensils"></i> <span id="sidebar-poi-text">Địa Điểm Ẩm Thực</span></a>
+                <a href="#" id="menu-audio"><i class="fa-solid fa-microphone-lines"></i> Quản Lý Audio</a>
+                <a href="#" id="menu-translations"><i class="fa-solid fa-language"></i> Quản Lý Bản Dịch</a>
+                <a href="#" id="menu-accounts" class="admin-only hidden"><i class="fa-solid fa-users-gear"></i> Quản Lý Đối Tác & Thanh Toán</a>
+                <a href="#" id="menu-presence" class="admin-only hidden"><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Sử Dụng</a>
+            </nav>
+
+            <div class="firebase-status">
+                <div id="connection-status" class="status-dot warning"></div>
+                <span id="status-text">Đang kết nối...</span>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Global Expiry Banner for Owners -->
+            <div id="expiry-banner" class="hidden" style="margin-bottom: 25px;">
+                <div class="banner-content">
+                    <div class="banner-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <div class="banner-text">
+                        <strong>Thông báo quan trọng:</strong> Bạn có một số quán sắp hết hạn hoặc đã ngừng dịch vụ. Vui lòng gia hạn để khách hàng có thể tiếp tục xem Menu & Audio.
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: ĐIỂM ẨM THỰC -->
+            <section id="view-pois">
+                <header class="top-header">
+                    <div class="premium-title">
+                        <h1 class="glow-text">Quản Lý Điểm Ẩm Thực</h1>
+                        <div class="title-underline"></div>
+                    </div>
+                    <button id="btn-add-new" class="btn-primary">
+                        <i class="fa-solid fa-plus"></i> THÊM QUÁN MỚI
+                    </button>
+                </header>
+
+                <div class="stats-grid" id="stats-grid">
+                    <div class="stat-card" id="stat-card-1">
+                        <div class="stat-icon" id="stat-icon-1"><i class="fa-solid fa-hotel"></i></div>
+                        <div class="stat-info">
+                            <label id="stat-label-1">TỔNG SỐ QUÁN</label>
+                            <h2 id="stat-value-1">0</h2>
+                        </div>
+                    </div>
+                    <div class="stat-card" id="stat-card-2">
+                        <div class="stat-icon open" id="stat-icon-2"><i class="fa-solid fa-door-open"></i></div>
+                        <div class="stat-info">
+                            <label id="stat-label-2">ĐANG MỞ CỬA</label>
+                            <h2 id="stat-value-2">0</h2>
+                        </div>
+                    </div>
+                    <div class="stat-card" id="stat-card-3">
+                        <div class="stat-icon" id="stat-icon-3" style="background: rgba(139, 92, 246, 0.2); color: #8b5cf6;"><i class="fa-solid fa-qrcode"></i></div>
+                        <div class="stat-info">
+                            <label id="stat-label-3">LƯỢT QUÉT (NGÀY)</label>
+                            <h2 id="stat-value-3">0</h2>
+                        </div>
+                    </div>
+                    <div class="stat-card admin-only" id="stat-card-4">
+                        <div class="stat-icon live-indicator pulse" id="stat-icon-4" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;"><i class="fa-solid fa-signal"></i></div>
+                        <div class="stat-info">
+                            <label id="stat-label-4">TRỰC TUYẾN (LIVE)</label>
+                            <h2 id="stat-value-4">0</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search & Filter Bar -->
+                <div class="search-filter-row">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="search-input" placeholder="Tìm tên quán hoặc địa chỉ...">
+                    </div>
+                    <div class="filter-group" id="filter-group">
+                        <button class="filter-chip active" data-filter="all">Tất cả</button>
+                        <button class="filter-chip" data-filter="Oc">Ốc</button>
+                        <button class="filter-chip" data-filter="Lau">Lẩu</button>
+                        <button class="filter-chip" data-filter="Khac">Khác</button>
+                        <button id="filter-pending-btn" class="filter-chip hidden" data-filter="pending" style="border-color: var(--danger); color: var(--danger); font-weight: bold;">Chờ Duyệt</button>
+                    </div>
+                </div>
+
+                <!-- Table / List -->
+                <div class="glass-card">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 20%;">Tên Quán</th>
+                                <th style="width: 25%;">Loại / Địa Chỉ</th>
+                                <th style="width: 15%;">Tọa độ</th>
+                                <th style="width: 15%;">Trạng Thái</th>
+                                <th style="width: 15%;">Gia Hạn</th>
+                                <th style="width: 10%;">Hành Động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <!-- Data will be loaded here -->
+                            <tr>
+                                <td colspan="4" class="loading-cell">Đang tải dữ liệu từ Firebase...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- VIEW: AUDIO -->
+            <section id="view-audio" class="hidden">
+                <header class="top-header" style="margin-bottom: 20px; border-bottom: 1px solid rgba(255,215,0,0.1); padding-bottom: 15px;">
+                    <div class="premium-title">
+                        <h1 class="glow-text" style="font-size: 24px;">Quản Lý Audio Guide</h1>
+                        <div class="title-underline"></div>
+                    </div>
+                </header>
+
+                <div class="search-filter-row" style="margin-bottom: 20px;">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="search-audio-input" placeholder="Tìm tên quán trong danh sách audio...">
+                    </div>
+                    <div class="filter-group">
+                        <select id="filter-lang" style="background: rgba(10,10,10,0.8); color: #fff; border: 1px solid var(--accent); padding: 8px 15px; border-radius: 10px; cursor: pointer; outline: none;">
+                            <option value="all">Tất cả ngôn ngữ</option>
+                            <option value="vi">Tiếng Việt</option>
+                            <option value="en">English</option>
+                            <option value="de">Deutsch</option>
+                            <option value="fr">Français</option>
+                            <option value="zh">中文</option>
+                            <option value="ja">日本語</option>
+                            <option value="ko">한국어</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="glass-card">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 45%;">Tên Quán</th>
+                                <th style="width: 30%;">Ngôn ngữ đã thiết lập</th>
+                                <th style="width: 25%;">Cài đặt Audio</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-audio-body">
+                            <!-- Data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            
+            <!-- VIEW: BẢN DỊCH -->
+            <section id="view-translations" class="hidden">
+                <header class="top-header" style="margin-bottom: 20px; border-bottom: 1px solid rgba(255,215,0,0.1); padding-bottom: 15px;">
+                    <div class="premium-title">
+                        <h1 class="glow-text" style="font-size: 24px;">Quản Lý Bản Dịch (TTS)</h1>
+                        <div class="title-underline"></div>
+                    </div>
+                </header>
+
+                <div class="search-filter-row" style="margin-bottom: 20px;">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="search-translation-input" placeholder="Tìm tên quán để quản lý bản dịch...">
+                    </div>
+                    <div class="action-btns">
+                        <!-- Migration button removed as requested -->
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40%;">Tên Quán</th>
+                                <th style="width: 35%;">Tiến độ hoàn thành</th>
+                                <th style="width: 25%;">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-translation-body">
+                            <!-- Data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- VIEW: THỐNG KÊ -->
+            <section id="view-stats" class="hidden">
+                 <header class="top-header">
+                    <div class="premium-title">
+                        <h1 class="glow-text">Báo Cáo & Thống Kê</h1>
+                        <div class="title-underline"></div>
+                    </div>
+                </header>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.2); color: #10b981;"><i class="fa-solid fa-dollar-sign"></i></div>
+                        <div class="stat-info">
+                            <label>DOANH THU HÔM NAY</label>
+                            <h2 id="stat-revenue-today">$0</h2>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6;"><i class="fa-solid fa-credit-card"></i></div>
+                        <div class="stat-info">
+                            <label>LƯỢT THANH TOÁN (NGÀY)</label>
+                            <h2 id="stat-payments-today">0</h2>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon live-indicator" style="background: rgba(239, 68, 68, 0.2); color: #ef4444;"><i class="fa-solid fa-signal"></i></div>
+                        <div class="stat-info">
+                            <label>TRỰC TUYẾN (LIVE)</label>
+                            <h2 id="stat-live-count">0</h2>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(139, 92, 246, 0.2); color: #8b5cf6;"><i class="fa-solid fa-clock"></i></div>
+                        <div class="stat-info">
+                            <label>GIỜ CAO ĐIỂM</label>
+                            <h2 id="stat-peak-hour">--:--</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filter Bar -->
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <div class="filter-chip active" onclick="setFilterMode('today', this)">HÔM NAY</div>
+                        <div class="filter-chip" onclick="setFilterMode('month', this)">THÁNG</div>
+                        <div class="filter-chip" onclick="setFilterMode('custom', this)">TÙY CHỈNH</div>
+                    </div>
+                    
+                    <div id="date-picker-trigger" class="date-display" onclick="toggleCalendar()">
+                        <i class="fa-solid fa-calendar-days"></i>
+                        <span id="selected-date-text">Hôm nay</span>
+                    </div>
+
+                    <!-- Custom Calendar Popup -->
+                    <div id="calendar-popup" class="calendar-popup hidden">
+                        <!-- Content will be injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Charts Container -->
+                <div class="charts-row">
+                    <div class="glass-card chart-container">
+                        <h3><i class="fa-solid fa-chart-line"></i> Doanh thu & Lượt quét</h3>
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                    <div class="glass-card chart-container">
+                        <h3><i class="fa-solid fa-clock-rotate-left"></i> Lưu lượng theo giờ (24h)</h3>
+                        <canvas id="hourlyChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="charts-row" style="margin-top: 25px;">
+                    <!-- Ranking Lượt Quét -->
+                    <div class="glass-card" style="padding: 20px;">
+                        <h3 style="color: var(--accent); margin-bottom: 15px; font-size: 14px;"><i class="fa-solid fa-ranking-star"></i> Xếp hạng Địa điểm</h3>
+                        <table class="data-table" style="font-size: 13px;">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Quán</th>
+                                    <th>Lượt quét</th>
+                                    <th>Doanh thu</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-rank-body"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- Ranking Audio -->
+                    <div class="glass-card" style="padding: 20px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
+                            <h3 style="color: var(--success); font-size: 14px;"><i class="fa-solid fa-headphones"></i> Top 10 Nghe Thuyết Minh</h3>
+                            <span style="font-size: 11px; opacity:0.6;">Avg: <span id="stat-avg-listen-time">0s</span></span>
+                        </div>
+                        <table class="data-table top-audio-table" style="font-size: 13px;">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Quán</th>
+                                    <th>Lượt nghe</th>
+                                    <th>Thời gian</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-audio-rank-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW: HỒ SƠ CÁ NHÂN -->
+            <section id="view-profile" class="hidden">
+                 <header class="top-header" style="margin-bottom: 30px;">
+                    <div class="premium-title">
+                        <h1 class="glow-text">Hồ Sơ Của Tôi</h1>
+                        <div class="title-underline"></div>
+                    </div>
+                </header>
+
+                <div class="glass-card" style="max-width: 600px; margin: 0 auto; padding: 40px; border: 1px solid rgba(255,215,0,0.1);">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <div id="profile-avatar-large" style="width: 80px; height: 80px; background: var(--accent-gradient); color: black; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 900; margin: 0 auto 15px; box-shadow: 0 0 20px rgba(255,215,0,0.2);">
+                            A
+                        </div>
+                        <h2 id="profile-name-display" style="color: white; margin: 0;">--/--</h2>
+                        <p id="profile-role-display" style="font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 2px;">--/--</p>
+                    </div>
+
+                    <div class="form-grid" style="display: flex; flex-direction: column; gap: 20px;">
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-user"></i> Tên hiển thị</label>
+                            <input type="text" id="prof-name" placeholder="Họ và tên của bạn">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-envelope"></i> Gmail (Dùng để đăng nhập)</label>
+                            <input type="email" id="prof-email" placeholder="email@gmail.com">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-key"></i> Mật khẩu mới (Để trống nếu không đổi)</label>
+                            <input type="password" id="prof-password" placeholder="Nhập mật khẩu mới...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-phone"></i> Số điện thoại</label>
+                            <input type="text" id="prof-phone" placeholder="Số điện thoại liên hệ">
+                        </div>
+
+                        <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 30px; display: flex; gap: 15px;">
+                            <button id="btn-save-profile" class="btn-primary" style="flex: 1; padding: 15px;">
+                                <i class="fa-solid fa-floppy-disk"></i> LƯU THÔNG TIN HỒ SƠ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Hidden element to fix JS error -->
+            <div id="config-alert" class="hidden"></div>
+            
+            <!-- VIEW: QUẢN LÝ ĐỐI TÁC & THANH TOÁN (Admin Only) -->
+            <section id="view-accounts" class="hidden">
+                <header class="top-header" style="margin-bottom: 25px;">
+                    <div class="premium-title">
+                        <h1 class="glow-text">Quản Lý Đối Tác & Thanh Toán</h1>
+                        <div class="title-underline"></div>
+                    </div>
+                </header>
+
+                <!-- KHỐI 1: DUYỆT GIA HẠN (THANH TOÁN) -->
+                <div class="glass-card" style="margin-bottom: 30px; border-color: rgba(16, 185, 129, 0.3);">
+                    <div style="padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="color: #10b981; font-size: 15px; margin: 0;"><i class="fa-solid fa-receipt"></i> Yêu Cầu Gia Hạn Chờ Duyệt</h3>
+                        <span class="poi-tag" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid #10b981;">Ưu tiên xử lý</span>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 25%;">Thông Tin Quán</th>
+                                    <th style="width: 25%;">Chủ Quán / Email</th>
+                                    <th style="width: 15%;">Gói Gia Hạn</th>
+                                    <th style="width: 20%;">Nội Dung CK</th>
+                                    <th style="width: 15%;">Hành Động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-payments-body">
+                                <tr><td colspan="5" style="text-align:center; padding:40px; opacity:0.5;">Đang tải yêu cầu gia hạn...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- KHỐI 2: DANH SÁCH ĐỐI TÁC -->
+                <div class="glass-card">
+                    <div style="padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <h3 style="color: var(--accent); font-size: 15px; margin: 0;"><i class="fa-solid fa-users-gear"></i> Danh Sách Tài Khoản Đối Tác</h3>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40%;">Tên Tài Khoản Cấp Độ</th>
+                                    <th style="width: 20%;">Số Quán</th>
+                                    <th style="width: 15%;">Trạng Thái</th>
+                                    <th style="width: 25%;">Hành Động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-accounts-body">
+                                <tr><td colspan="6" style="text-align:center; padding:40px; opacity:0.5;">Đang tải danh sách tài khoản...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW: LỊCH SỬ SỬ DỤNG (Admin Only) -->
+            <section id="view-presence" class="hidden">
+                <header class="top-header" style="margin-bottom: 25px;">
+                    <div class="premium-title">
+                        <h1 class="glow-text">Lịch Sử Sử Dụng & Trạng Thái</h1>
+                        <div class="title-underline"></div>
+                    </div>
+                    <button id="btn-clear-presence-history" class="btn-primary btn-danger" style="padding: 8px 15px; font-size: 11px;">
+                        <i class="fa-solid fa-trash-can"></i> XÓA LỊCH SỬ
+                    </button>
+                </header>
+
+                <div class="stats-grid" style="margin-bottom: 30px;">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6;"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                        <div class="stat-info">
+                            <label>TỔNG LƯỢT TRUY CẬP</label>
+                            <h2 id="presence-total-count">0</h2>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon live-indicator pulse" style="background: rgba(16, 185, 129, 0.2); color: #10b981;"><i class="fa-solid fa-signal"></i></div>
+                        <div class="stat-info">
+                            <label>HIỆN ĐANG ONLINE</label>
+                            <h2 id="presence-online-count">0</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <div style="padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="color: var(--accent); font-size: 15px; margin: 0;"><i class="fa-solid fa-list-ul"></i> Nhật Ký Truy Cập Hệ Thống</h3>
+                        <span class="poi-tag" style="background: rgba(255, 215, 0, 0.05); color: var(--accent); border: 1px solid var(--accent); font-size: 10px;">Cập nhật thời gian thực</span>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 25%;">Thiết Bị</th>
+                                    <th style="width: 15%;">Truy Cập</th>
+                                    <th style="width: 15%;">Nền Tảng</th>
+                                    <th style="width: 25%;">Thời Gian Vào</th>
+                                    <th style="width: 20%;">Trạng Thái</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-presence-body">
+                                <tr><td colspan="4" style="text-align:center; padding:40px; opacity:0.5;">Đang tải danh sách thiết bị...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div class="modal glass-card" style="max-width: 950px; width: 95%; max-height: 85vh; background: rgba(10,10,10,0.98); border: 1px solid var(--accent); overflow: hidden; padding: 0; display: flex; flex-direction: column;">
+            <div class="modal-header" style="background: rgba(255, 215, 0, 0.05); flex-shrink: 0;">
+                <h2 id="modal-title" style="color: var(--accent);"><i class="fa-solid fa-pen-nib"></i> Chỉnh Sửa Thông Tin</h2>
+                <button id="btn-close-modal" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <form id="poi-form" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+                <div class="modal-body" style="padding: 0; display: grid; grid-template-columns: 260px 1fr; overflow-y: auto; flex: 1;">
+                    <!-- Left: Media & Previews -->
+                    <div style="background: #050505; padding: 15px; border-right: 1px solid var(--card-border); display: flex; flex-direction: column; gap: 10px;">
+                        <div class="form-section-title" style="margin-bottom: 5px; font-size: 12px;"><i class="fa-solid fa-images"></i> Ảnh Đại Diện</div>
+                        
+                        <div class="image-upload-box" style="padding: 10px;">
+                            <label style="font-size: 10px;">Ảnh Chính (Banner)</label>
+                            <input type="text" id="input-imageurl" placeholder="Link ảnh..." style="padding: 6px; font-size: 12px;">
+                            <div class="file-custom-input mini" style="margin-top: 5px;">
+                                <i class="fa-solid fa-upload"></i> Tải ảnh mới
+                                <input type="file" id="file-imageurl" accept="image/*">
+                            </div>
+                        </div>
+
+                        <div class="image-upload-box" style="padding: 10px;">
+                            <label style="font-size: 10px;">Ảnh Phụ 2 & 3</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+                                <input type="text" id="input-imageurl2" placeholder="Link 2" style="padding: 6px; font-size: 11px;">
+                                <input type="text" id="input-imageurl3" placeholder="Link 3" style="padding: 6px; font-size: 11px;">
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 5px;">
+                                <div class="file-custom-input mini"><i class="fa-solid fa-cloud-arrow-up"></i> Up 2 <input type="file" id="file-imageurl2" accept="image/*"></div>
+                                <div class="file-custom-input mini"><i class="fa-solid fa-cloud-arrow-up"></i> Up 3 <input type="file" id="file-imageurl3" accept="image/*"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-section-title" style="margin-top: 10px; margin-bottom: 5px; font-size: 12px;"><i class="fa-solid fa-utensils"></i> Menu</div>
+                        <textarea id="input-menuitems" rows="2" placeholder="link1, link2..." style="padding: 8px; font-size: 12px;"></textarea>
+                        <div class="file-custom-input mini" style="background: rgba(255, 215, 0, 0.05);">
+                            <i class="fa-solid fa-file-image"></i> Chọn nhiều ảnh menu
+                            <input type="file" id="file-menuitems" accept="image/*" multiple>
+                        </div>
+                    </div>
+
+                    <!-- Right: Inputs -->
+                    <div style="padding: 20px;">
+                        <input type="hidden" id="input-id">
+                        
+                        <!-- Nhóm 1: Cơ bản -->
+                        <div class="form-group-container">
+                            <div class="form-section-title"><i class="fa-solid fa-circle-info"></i> Thông Tin Cơ Bản</div>
+                            <div class="form-grid-3">
+                                <div class="form-group">
+                                    <label><i class="fa-solid fa-shop"></i> Tên Quán <span class="required">*</span></label>
+                                    <input type="text" id="input-ten" required placeholder="Tên quán ăn">
+                                </div>
+                                <div class="form-group">
+                                    <label><i class="fa-solid fa-tag"></i> Loại Quán <span class="required">*</span></label>
+                                    <input type="hidden" id="input-loai" value="Oc">
+                                    <div class="type-selector">
+                                        <div class="type-pill active" data-value="Oc" onclick="selectType(this)">
+                                            <i class="fa-solid fa-shrimp"></i> Ốc
+                                        </div>
+                                        <div class="type-pill" data-value="Lau" onclick="selectType(this)">
+                                            <i class="fa-solid fa-fire-burner"></i> Lẩu
+                                        </div>
+                                        <div class="type-pill" data-value="Khac" onclick="selectType(this)">
+                                            <i class="fa-solid fa-ellipsis"></i> Khác
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label><i class="fa-solid fa-star"></i> Đánh giá</label>
+                                    <input type="number" step="0.1" id="input-rating" placeholder="Ví dụ: 4.8">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nhóm 2: Vị trí & Giờ giấc -->
+                        <div class="form-group-container" style="margin-top: 20px;">
+                            <div class="form-section-title"><i class="fa-solid fa-location-crosshairs"></i> Vị Trí & Hoạt Động</div>
+                            <div class="form-grid-3">
+                                <div class="form-group" style="grid-column: span 2;">
+                                    <label><i class="fa-solid fa-map-pin"></i> Địa Chỉ Chi Tiết</label>
+                                    <input type="text" id="input-diachi" placeholder="Số, Tên đường, Quận...">
+                                </div>
+                                <div class="form-group">
+                                    <label><i class="fa-solid fa-money-bill-wave"></i> Giá (VND)</label>
+                                    <input type="text" id="input-pricerange" placeholder="100K - 300K">
+                                </div>
+                                <div class="form-group">
+                                    <label><i class="fa-solid fa-compass"></i> Vĩ độ (Lat)</label>
+                                    <input type="number" step="any" id="input-lat" required>
+                                </div>
+                                <div class="form-group">
+                                    <label><i class="fa-solid fa-compass"></i> Kinh độ (Lng)</label>
+                                    <input type="number" step="any" id="input-lng" required>
+                                </div>
+                                <div class="form-group">
+                                    <label><i class="fa-solid fa-clock"></i> Mở cửa - Đóng cửa</label>
+                                    <div style="display: flex; gap: 5px; align-items: center;">
+                                        <input type="time" id="input-open-time" required style="padding: 8px;">
+                                        <span>-</span>
+                                        <input type="time" id="input-close-time" required style="padding: 8px;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nhóm 3: Liên hệ & Mô tả -->
+                        <div class="form-group-container" style="margin-top: 20px;">
+                            <div class="form-section-title"><i class="fa-solid fa-paper-plane"></i> Liên Hệ & Giới Thiệu</div>
+                            <div class="form-grid-2">
+                                <div class="form-group">
+                                    <label><i class="fa-solid fa-phone-volume"></i> Hotline</label>
+                                    <input type="text" id="input-sodienthoai" placeholder="09xxxx">
+                                </div>
+                                <div class="form-group">
+                                    <label><i class="fa-solid fa-envelope"></i> Email</label>
+                                    <input type="email" id="input-email" placeholder="abc@gmail.com">
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label><i class="fa-solid fa-quote-left"></i> Mô tả chi tiết (Tại sao khách nên đến quán?)</label>
+                                <textarea id="input-mota" rows="4" placeholder="Nhập những dòng giới thiệu hấp dẫn nhất..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="padding: 15px 20px; text-align: right; border-top: 1px solid var(--card-border); background: rgba(0,0,0,0.8); flex-shrink: 0;">
+                    <button type="button" id="btn-cancel" class="btn-secondary" style="margin-right: 15px;">Hủy Bỏ</button>
+                    <button type="submit" id="btn-save" class="btn-primary" style="padding: 12px 40px; font-size: 16px;">
+                        <i class="fa-solid fa-paper-plane"></i> GỬI DUYỆT NGAY
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Preview (Laptop View) -->
+    <div id="modal-preview" class="modal-overlay hidden">
+        <div class="modal glass-card" style="max-width: 950px; width: 95%; background: rgba(0,0,0,0.95); border: 1px solid var(--accent); overflow: hidden;">
+            <div class="modal-header" style="background: rgba(255, 215, 0, 0.05);">
+                <h2 style="color: var(--accent); white-space: nowrap;"><i class="fa-solid fa-desktop"></i> Xem Chi Tiết Quán Ăn</h2>
+                <button id="btn-close-preview" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" style="padding: 0;">
+                <div class="preview-laptop">
+                    <!-- Left Column: Visuals (Passport Style) -->
+                    <div class="preview-visuals">
+                        <div id="preview-banner" class="preview-banner-large"></div>
+                        
+                        <!-- Unique Passport Widget -->
+                        <div class="preview-passport">
+                            <i class="fa-solid fa-compass compass-bg"></i>
+                            <div class="passport-header">
+                                <div class="status-indicator">
+                                    <span id="preview-status-dot" class="status-dot-led"></span>
+                                    <span id="preview-status-text">ĐANG KIỂM TRA...</span>
+                                </div>
+                                <div class="passport-stamp">
+                                    <i class="fa-solid fa-award"></i>
+                                    <span>VKT QUALITY</span>
+                                </div>
+                            </div>
+
+                            <div class="passport-body">
+                                <div class="passport-row">
+                                    <label>CLASSIFICATION</label>
+                                    <span id="preview-tag">CATEGORY</span>
+                                </div>
+                                <div class="passport-row">
+                                    <label>SCAN COORDINATES</label>
+                                    <span id="preview-coords" class="tech-text">0.0000, 0.0000</span>
+                                </div>
+                                <div class="passport-footer">
+                                    <div id="preview-rating" class="rating-stars"></div>
+                                    <div class="stamp-date">EST. 2024</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column: Information -->
+                    <div class="preview-details">
+                        <h2 id="preview-title" class="preview-title">Tên Quán Ăn</h2>
+                        
+                        <div class="preview-info-grid">
+                            <div class="preview-info-card">
+                                <i class="fa-solid fa-location-dot"></i>
+                                <div>
+                                    <label>Địa Chỉ</label>
+                                    <span id="preview-address">Địa chỉ quán...</span>
+                                </div>
+                            </div>
+                            <div class="preview-info-card">
+                                <i class="fa-solid fa-clock"></i>
+                                <div>
+                                    <label>Giờ Hoạt Động</label>
+                                    <span id="preview-time">00:00 - 00:00</span>
+                                </div>
+                            </div>
+                            <div class="preview-info-card">
+                                <i class="fa-solid fa-phone"></i>
+                                <div>
+                                    <label>Số Điện Thoại</label>
+                                    <span id="preview-phone">Số điện thoại...</span>
+                                </div>
+                            </div>
+                            <div class="preview-info-card">
+                                <i class="fa-solid fa-money-bill-wave"></i>
+                                <div>
+                                    <label>Khoảng Giá</label>
+                                    <span id="preview-price">100k - 500k</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="preview-section-title">Giới Thiệu Chung</div>
+                        <p id="preview-desc" class="preview-description"></p>
+
+                        <div class="preview-section-title">Thực Đơn (Menu Hình Ảnh)</div>
+                        <div id="preview-menu" class="preview-menu-scroll">
+                            <!-- Menu images here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUTH OVERLAY -->
+    <div id="auth-overlay" class="auth-overlay">
+        <div class="auth-card glass-card">
+            <div class="auth-header">
+                <div class="logo">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                    <span>VinhKhanhAdmin</span>
+                </div>
+                <h2 id="auth-title">Đăng Nhập Hệ Thống</h2>
+                <p id="auth-subtitle">Chào mừng bạn quay trở lại với trung tâm điều hành</p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form">
+                <div class="form-group">
+                    <label><i class="fa-solid fa-envelope"></i> Email</label>
+                    <input type="email" id="login-email" required placeholder="name@example.com">
+                </div>
+                <div class="form-group">
+                    <label><i class="fa-solid fa-lock"></i> Mật khẩu</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-primary btn-block">ĐĂNG NHẬP <i class="fa-solid fa-arrow-right"></i></button>
+                <div class="auth-footer">
+                    Chưa có tài khoản? <a href="#" onclick="toggleAuthMode('register')">Đăng ký đối tác</a>
+                </div>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" class="auth-form hidden">
+                <div class="form-group">
+                    <label><i class="fa-solid fa-user"></i> Họ và Tên</label>
+                    <input type="text" id="reg-name" required placeholder="Nguyễn Văn A">
+                </div>
+                <div class="form-group">
+                    <label><i class="fa-solid fa-envelope"></i> Email</label>
+                    <input type="email" id="reg-email" required placeholder="name@example.com">
+                </div>
+                <div class="form-group">
+                    <label><i class="fa-solid fa-lock"></i> Mật khẩu</label>
+                    <input type="password" id="reg-password" required placeholder="Mật khẩu (ít nhất 6 ký tự)">
+                </div>
+                
+                <div class="subscription-notice">
+                    <div class="notice-icon"><i class="fa-solid fa-crown"></i></div>
+                    <div class="notice-text">
+                        <strong>Gói Đối Tác VIP</strong>
+                        <p>Duy trì quản lý quán ăn & audio: <strong>10$ / tháng / mỗi quán</strong></p>
+                    </div>
+                </div>
+
+                <div class="payment-simulation">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="reg-agreement" required>
+                        <span class="checkmark"></span>
+                        Tôi đồng ý với các điều khoản đối tác
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-primary btn-block">THANH TOÁN & ĐĂNG KÝ <i class="fa-solid fa-credit-card"></i></button>
+                <div class="auth-footer">
+                    Đã có tài khoản? <a href="#" onclick="toggleAuthMode('login')">Đăng nhập ngay</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SUBSCRIPTION MODAL -->
+    <div id="modal-subscription" class="modal-overlay hidden">
+        <div class="modal glass-card" style="max-width: 450px; text-align: center;">
+            <div class="modal-header">
+                <h2 style="color: var(--accent);"><i class="fa-solid fa-hourglass-half"></i> Gói Của Bạn Đã Hết Hạn</h2>
+            </div>
+            <div class="modal-body" style="padding: 30px;">
+                <p id="subscription-msg" style="margin-bottom: 20px; opacity: 0.8;">Vui lòng gia hạn để tiếp tục sử dụng các tính năng quản lý và phân tích doanh thu.</p>
+                <button id="btn-renew-sub" class="btn-primary" style="width: 100%;" onclick="simulatePayment()">GIA HẠN NGAY (10$/quán)</button>
+                <button class="btn-secondary" style="width: 100%; margin-top: 10px;" onclick="firebase.auth().signOut()">ĐĂNG XUẤT</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    
+    <!-- QRCode Lib -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <!-- Modal Audio Guide (Tạo riêng cho TAB Audio) -->
+    <div id="modal-audio" class="modal-overlay hidden">
+        <div class="modal glass-card" style="max-width: 600px; width: 95%; max-height: 85vh; background: rgba(5,5,5,0.98); border: 1px solid var(--accent); overflow: hidden; display: flex; flex-direction: column; padding: 0; box-shadow: 0 0 30px rgba(255, 215, 0, 0.1);">
+            <div class="modal-header" style="background: rgba(255, 215, 0, 0.05); flex-shrink: 0; padding: 15px 20px;">
+                <h2 style="color: var(--accent);"><i class="fa-solid fa-file-audio"></i> Cấu Hình Audio: <span id="audio-poi-title" style="color: #fff">...</span></h2>
+                <button id="btn-close-audio-modal" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="modal-body" style="padding: 15px; overflow-y: auto; flex: 1;">
+                <input type="hidden" id="input-audio-id">
+                
+                <div id="audio-upload-status-global" style="display: none; padding: 12px; background: rgba(255, 215, 0, 0.08); border-radius: 10px; margin-bottom: 15px; font-size: 13px; color: var(--accent); border: 1px solid rgba(255, 215, 0, 0.15);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span><i class="fa-solid fa-cloud-arrow-up"></i> <span id="audio-progress-text">Đang tải file...</span></span>
+                        <span id="audio-progress-percent">0%</span>
+                    </div>
+                    <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
+                        <div id="audio-progress-bar" style="width: 0%; height: 100%; background: var(--gold-gradient); transition: width 0.3s ease;"></div>
+                    </div>
+                </div>
+
+                <div id="audio-lang-list" class="audio-lang-list">
+                    <!-- Sẽ được fill bằng JavaScript: 9 hàng ngôn ngữ -->
+                </div>
+                
+                <!-- Input file ẩn dùng chung cho các hàng -->
+                <input type="file" id="shared-audio-file" accept="audio/*" style="display: none;">
+            </div>
+
+            <div class="modal-footer" style="padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--card-border); background: rgba(0,0,0,0.8); flex-shrink: 0;">
+                <button type="button" id="btn-test-storage" class="btn-secondary" style="font-size: 11px; padding: 6px 14px;" onclick="testStorageConnection()">
+                    <i class="fa-solid fa-wifi"></i> Kiểm tra kết nối
+                </button>
+                <button type="button" id="btn-cancel-audio" class="btn-secondary">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal QR RIÊNG BIỆT -->
+    <div id="modal-qr" class="modal-overlay hidden">
+        <div class="modal glass-card" style="max-width: 400px; width: 95%; background: rgba(5,5,5,0.98); border: 1px solid var(--accent); padding: 0; box-shadow: 0 0 30px rgba(255, 215, 0, 0.1);">
+            <div class="modal-header" style="background: rgba(255, 215, 0, 0.05); padding: 15px 20px;">
+                <h2 style="color: var(--accent);"><i class="fa-solid fa-qrcode"></i> Mã QR Trạm Dừng Chân</h2>
+                <button id="btn-close-qr-modal" onclick="document.getElementById('modal-qr').classList.add('hidden'); document.body.style.overflow='auto';" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" style="padding: 12px 20px; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                <input type="hidden" id="qr-poi-id">
+                
+                <div style="background: #ffffff; padding: 12px; border-radius: 12px; margin-bottom: 12px; border: 2px solid var(--accent); box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+                    <div id="qrcode-container" style="display: flex; justify-content: center; align-items: center;"></div>
+                </div>
+                
+                <div style="width: 100%; margin-bottom: 12px;">
+                    <div style="display: flex; gap: 5px;">
+                        <input type="text" id="qr-direct-link" readonly placeholder="URL truy cập tiếp" style="flex: 1; padding: 8px 12px; font-size: 11px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff;">
+                        <button type="button" class="btn-primary" style="padding: 0 12px; border-radius: 6px; background: #334155; height: 32px;" onclick="copyQrLink()" title="Sao chép"><i class="fa-solid fa-copy"></i></button>
+                    </div>
+                </div>
+                
+                <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 15px; opacity: 0.8;">
+                    <i class="fa-solid fa-circle-info" style="color: var(--accent);"></i> Quét mã để xem Audio Guide & Thực đơn 3D.
+                </p>
+                
+                <div style="display: flex; gap: 8px; width: 100%;">
+                    <button type="button" class="btn-primary" style="flex: 1; padding: 10px; font-size: 11px; justify-content: center;" onclick="downloadQR()">
+                        <i class="fa-solid fa-download"></i> TẢI QR
+                    </button>
+                    <button type="button" class="btn-primary" style="flex: 1; padding: 10px; font-size: 11px; justify-content: center; background: linear-gradient(135deg, #2563eb, #1d4ed8);" onclick="window.open('scan.html#poi=' + document.getElementById('qr-poi-id').value, '_blank')">
+                        <i class="fa-solid fa-eye"></i> XEM THỬ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Bản Dịch RIÊNG BIỆT -->
+    <div id="modal-translation" class="modal-overlay hidden">
+        <div class="modal glass-card" style="max-width: 900px; width: 95%; max-height: 85vh; background: rgba(5,5,5,0.98); border: 1px solid var(--accent); display: flex; flex-direction: column; padding: 0; box-shadow: 0 0 30px rgba(59, 130, 246, 0.1);">
+            <div class="modal-header" style="background: rgba(59, 130, 246, 0.05); flex-shrink: 0;">
+                <h2 style="color: #3b82f6;"><i class="fa-solid fa-language"></i> Chỉnh Sửa Bản Dịch: <span id="trans-poi-title" style="color: #fff">...</span></h2>
+                <button id="btn-close-trans-modal" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="modal-body" style="padding: 20px; overflow-y: auto; flex: 1;">
+                <input type="hidden" id="input-trans-id">
+                <div class="alert-box info-alert" style="margin-bottom: 15px;">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>Tự động dịch dựa trên nội dung Tiếng Việt. Bạn có thể sửa lại cho đúng ý.</span>
+                </div>
+                
+                <div class="translation-grid" id="modal-translation-grid">
+                    <!-- Textareas will be injected here -->
+                </div>
+            </div>
+
+            <div class="modal-footer" style="padding: 15px 20px; border-top: 1px solid var(--card-border); background: rgba(0,0,0,0.8); flex-shrink: 0;">
+                <button type="button" id="btn-cancel-trans" class="btn-secondary" style="margin-right: auto;">Đóng</button>
+                <button id="btn-modal-auto-translate" class="btn-primary" style="background: #3b82f6; border-color: #3b82f6;">
+                    <i class="fa-solid fa-wand-sparkles"></i> TỰ ĐỘNG DỊCH
+                </button>
+                <button id="btn-modal-save-trans" class="btn-primary" style="background: var(--success); border-color: var(--success);">
+                    <i class="fa-solid fa-floppy-disk"></i> LƯU THAY ĐỔI
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: EDIT PROFILE -->
+    <div id="modal-profile" class="modal-overlay hidden">
+        <div class="modal glass-card" style="max-width: 400px; width: 95%; background: rgba(5,5,5,0.98); border: 1px solid var(--accent); padding: 0;">
+            <div class="modal-header" style="background: rgba(255, 215, 0, 0.05); padding: 15px 20px;">
+                <h2 style="color: var(--accent);"><i class="fa-solid fa-user-pen"></i> Chỉnh Sửa Hồ Sơ</h2>
+                <button class="btn-icon" onclick="closeModal('modal-profile')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" style="padding: 20px;">
+                <form id="profile-form">
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label style="display:block; margin-bottom: 5px; font-size: 13px; color: var(--text-secondary);">Tên Hiển Thị</label>
+                        <input type="text" id="profile-name" required style="width:100%; padding:10px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:white;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label style="display:block; margin-bottom: 5px; font-size: 13px; color: var(--text-secondary);">Email</label>
+                        <input type="email" id="profile-email" readonly style="width:100%; padding:10px; border-radius:8px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.05); color:var(--text-secondary); cursor:not-allowed;">
+                    </div>
+                    <div style="margin-top: 25px; display: flex; gap: 10px;">
+                        <button type="submit" class="btn-primary" style="flex: 1;">LƯU THAY ĐỔI</button>
+                        <button type="button" class="btn-secondary" style="flex: 1;" onclick="closeModal('modal-profile')">HỦY</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL: CHI TIẾT ĐỐI TÁC -->
+    <div id="modal-user-detail" class="modal-overlay hidden">
+        <div class="modal glass-card" style="max-width: 1000px; width: 95%; background: rgba(5,5,5,0.98); border: 2px solid var(--accent); padding: 0;">
+            <div class="modal-header" style="background: rgba(255, 215, 0, 0.05); padding: 20px;">
+                <h2 style="color: var(--accent);"><i class="fa-solid fa-address-card"></i> Báo Cáo Chi Tiết Đối Tác</h2>
+                <button class="btn-icon" onclick="closeModal('modal-user-detail')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div id="detail-user-head" style="margin: 0 25px; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
+                <!-- User basic info: Name, Email -->
+            </div>
+
+            <div class="modal-body" style="padding: 25px;">
+                <!-- Full-width POI Table -->
+                <div class="detail-column">
+                    <h3 style="font-size: 14px; color: var(--accent); margin-bottom: 20px;"><i class="fa-solid fa-layer-group"></i> Danh sách quán ăn liên kết & Thời hạn hợp đồng</h3>
+                    <div style="background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden;">
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            <table class="data-table compact-detail-table">
+                                <thead style="position: sticky; top: 0; background: #111; z-index: 1;">
+                                    <tr>
+                                        <th style="width: 40px; font-size: 10px;">#</th>
+                                        <th style="font-size: 10px;">Tên Quán Ăn / Loại</th>
+                                        <th style="width: 100px; font-size: 10px;">Ngày Bắt Đầu</th>
+                                        <th style="width: 100px; font-size: 10px;">Ngày Kết Thúc</th>
+                                        <th style="width: 80px; font-size: 10px;">Còn Lại</th>
+                                        <th style="width: 90px; font-size: 10px;">Trạng Thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="detail-poi-list">
+                                    <!-- POI table rows will be injected here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer" style="padding: 15px 25px; border-top: 1px solid var(--card-border); text-align: right; background: rgba(0,0,0,0.3);">
+                <button class="btn-secondary" onclick="closeModal('modal-user-detail')">ĐÓNG BÁO CÁO</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Logic -->
+    <script>
+        function selectType(element) {
+            document.querySelectorAll('.type-pill').forEach(pill => pill.classList.remove('active'));
+            element.classList.add('active');
+            document.getElementById('input-loai').value = element.getAttribute('data-value');
+        }
+
+        // Đồng bộ giao diện khi app.js đổ dữ liệu vào input-loai (Lúc nhấn Sửa)
+        const loaiInput = document.getElementById('input-loai');
+        const observer = new MutationObserver(() => {
+            syncTypeUI(loaiInput.value);
+        });
+        
+        // Theo dõi thay đổi thuộc tính value (app.js dùng .value = ...)
+        // Lưu ý: .value = ... không kích hoạt 'change' event, nên ta dùng cách khác hoặc ghi đè setter
+        Object.defineProperty(loaiInput, 'value', {
+            get: function() { return this.getAttribute('value'); },
+            set: function(val) {
+                this.setAttribute('value', val);
+                syncTypeUI(val);
+            }
+        });
+
+        function syncTypeUI(val) {
+            document.querySelectorAll('.type-pill').forEach(pill => {
+                if(pill.getAttribute('data-value') === val) {
+                    pill.classList.add('active');
+                } else {
+                    pill.classList.remove('active');
+                }
+            });
+        }
+    </script>
+    <!-- MODAL: GIA HẠN HỢP ĐỒNG (OWNER) - NÂNG CẤP THÀNH CỬA SỔ TRUNG TÂM -->
+    <div id="modal-renew" class="modal-overlay hidden">
+        <div class="modal glass-card" style="max-width: 950px; width: 95%; max-height: 85vh; background: rgba(5,5,5,0.98); border: 2px solid var(--accent); overflow: hidden; padding: 0; display: flex; flex-direction: column;">
+            <div class="modal-header" style="background: rgba(255, 215, 0, 0.05); padding: 20px; flex-shrink: 0;">
+                <h2 style="color: var(--accent);"><i class="fa-solid fa-hourglass-start"></i> Gia Hạn Hợp Đồng Ẩm Thực</h2>
+                <button class="btn-icon" onclick="closeModal('modal-renew')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="modal-body" style="padding: 0; display: grid; grid-template-columns: 1.2fr 1fr; overflow-y: auto; flex: 1;">
+                <!-- Bên trái: Thông tin quán & Chọn gói -->
+                <div style="padding: 30px; border-right: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.01);">
+                    <div class="renew-poi-info" style="text-align: left; margin-bottom: 30px;">
+                        <h3 id="renew-poi-name" style="color: #fff; font-size: 26px; margin-bottom: 10px;">Tên Quán Ăn</h3>
+                        <p id="renew-poi-expiry" style="font-size: 14px; color: var(--accent); font-weight: 500;">Hạn dùng hiện tại: Đang tải...</p>
+                        <div style="width: 50px; height: 3px; background: var(--accent); margin-top: 15px; border-radius: 2px;"></div>
+                    </div>
+
+                    <h4 style="font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 20px;">1. Chọn Gói Gia Hạn</h4>
+                    <div class="package-selection" style="display: flex; flex-direction: column; gap: 12px;">
+                        <div class="package-card active" onclick="selectPackage(1, 500000)" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px;">
+                            <div>
+                                <span class="p-time" style="display: block; font-size: 16px;">Gói 01 Tháng</span>
+                                <span style="font-size: 12px; opacity: 0.6;">Cơ bản cho trải nghiệm</span>
+                            </div>
+                            <span class="p-price" style="font-size: 18px;">500.000 VNĐ</span>
+                        </div>
+                        <div class="package-card" onclick="selectPackage(6, 2700000)" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px;">
+                            <div>
+                                <span class="p-time" style="display: block; font-size: 16px;">Gói 06 Tháng</span>
+                                <span class="p-save" style="background: var(--success); color: #000; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 800;">TIẾT KIỆM 10%</span>
+                            </div>
+                            <span class="p-price" style="font-size: 18px;">2.700.000 VNĐ</span>
+                        </div>
+                        <div class="package-card" onclick="selectPackage(12, 4800000)" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px;">
+                            <div>
+                                <span class="p-time" style="display: block; font-size: 16px;">Gói 12 Tháng (1 Năm)</span>
+                                <span class="p-save" style="background: #ef4444; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 800;">SIÊU ƯU ĐÃI 20%</span>
+                            </div>
+                            <span class="p-price" style="font-size: 18px;">4.800.000 VNĐ</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bên phải: Thanh toán -->
+                <div style="padding: 30px; background: rgba(0,0,0,0.3);">
+                    <h4 style="font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 20px;">2. Thanh Toán Chuyển Khoản</h4>
+                    
+                    <div id="payment-instruction" class="payment-instruction" style="background: none; padding: 0;">
+                        <div style="text-align: center; margin-bottom: 25px;">
+                            <img id="qr-payment-img" src="" alt="QR Thanh Toan" style="width: 250px; border-radius: 12px; border: 8px solid white; box-shadow: 0 15px 40px rgba(0,0,0,0.6);">
+                            <p style="font-size: 12px; margin-top: 15px; opacity: 0.7;"><i class="fa-solid fa-camera"></i> Sử dụng App Ngân hàng để quét mã QR</p>
+                        </div>
+                        
+                        <div class="bank-info" style="background: rgba(255,215,0,0.05); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,215,0,0.15);">
+                            <div style="margin-bottom: 15px; display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,215,0,0.1); padding-bottom: 10px;">
+                                <span style="opacity: 0.6;">Chủ tài khoản:</span>
+                                <strong style="color: #fff;">NGUYÊN VĂN A</strong>
+                            </div>
+                            <div style="margin-bottom: 15px; display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,215,0,0.1); padding-bottom: 10px;">
+                                <span style="opacity: 0.6;">Số tài khoản:</span>
+                                <strong style="color: #fff;">0938634868 (MB Bank)</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="opacity: 0.6;">Nội dung:</span>
+                                <strong id="payment-content" style="color: var(--accent); font-family: monospace; font-size: 16px; background: rgba(0,0,0,0.4); padding: 4px 10px; border-radius: 6px;">GH...</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer" style="padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.8); flex-shrink: 0;">
+                <p style="font-size: 11px; color: var(--text-secondary); max-width: 400px; line-height: 1.4;">
+                    <i class="fa-solid fa-shield-halved" style="color: var(--success);"></i> Sau khi chuyển khoản, vui lòng nhấn nút xác nhận bên dưới. Kỹ thuật viên sẽ phê duyệt yêu cầu của bạn sau vài phút.
+                </p>
+                <div style="display: flex; gap: 15px;">
+                    <button class="btn-secondary" onclick="closeModal('modal-renew')" style="border-color: rgba(255,255,255,0.1);">Đóng</button>
+                    <button id="btn-confirm-payment" class="btn-primary" style="padding: 12px 30px; font-weight: 800; background: var(--gold-gradient); color: #000; border: none; box-shadow: 0 0 20px rgba(191, 149, 63, 0.2);">
+                        <i class="fa-solid fa-paper-plane"></i> XÁC NHẬN ĐÃ CHUYỂN
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* CSS CHO HỆ THỐNG THANH TOÁN */
+        #expiry-banner {
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.2), rgba(0, 0, 0, 0.5));
+            border-left: 5px solid #ef4444;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .banner-content { display: flex; align-items: center; gap: 15px; }
+        .banner-icon { font-size: 24px; color: #ef4444; }
+        .banner-text { font-size: 14px; line-height: 1.5; color: #f8fafc; }
+
+        .package-card {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        .package-card.active {
+            border-color: var(--accent);
+            background: rgba(255, 215, 0, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255,215,0,0.15);
+        }
+        .p-time { font-weight: 700; color: white; display: block; font-size: 15px;}
+        .p-price { font-size: 13px; color: var(--text-secondary); }
+        .active .p-price { color: var(--accent); font-weight: 700; }
+        .p-save { 
+            position: absolute; top: 0; right: 0; background: #ef4444; color: white; 
+            font-size: 8px; padding: 2px 5px; border-bottom-left-radius: 4px; font-weight: 800;
+        }
+
+        .contract-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .contract-ok { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid #10b981; }
+        .contract-warning { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid #f59e0b; }
+        .contract-expired { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; }
+
+        .btn-renew-inline {
+            background: none;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-left: 8px;
+            transition: all 0.2s;
+        }
+        .btn-renew-inline:hover {
+            background: var(--accent);
+            color: black;
+        }
+    </style>
+
+    <style>
+        .package-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            border: 2px solid transparent;
+        }
+        .package-card:hover {
+            background: rgba(255, 215, 0, 0.05);
+            transform: translateY(-3px);
+            border-color: rgba(255, 215, 0, 0.2);
+        }
+        .package-card.active {
+            background: rgba(255, 215, 0, 0.1);
+            border-color: var(--accent);
+            box-shadow: 0 10px 25px rgba(255, 215, 0, 0.15);
+        }
+        .p-time { font-weight: 800; color: #fff; }
+        .p-price { font-weight: 900; color: var(--accent); }
+    </style>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
 using Plugin.Maui.Audio; // Khai báo thư viện Audio
@@ -46,6 +46,9 @@ public static class MauiProgram
         // Cần cài NuGet: Microsoft.Extensions.Logging.Debug
         builder.Logging.AddDebug();
 #endif
+
+        // Kích hoạt tính năng theo dõi trạng thái trực tuyến (Presence)
+        Services.PresenceService.Initialize();
 
         return builder.Build();
     }
